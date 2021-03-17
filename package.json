@@ -8,6 +8,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@mindinventory/react-native-tab-bar-interaction": "github:mindinventory/react-native-tab-bar-interaction",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/drawer": "^5.12.4",
     "@react-navigation/native": "^5.9.3",
