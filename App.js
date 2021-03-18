@@ -9,6 +9,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 import HomeScreen from './screens/HomeScreen';
+import DetailScreen from './screens/DetailScreen';
 
 enableScreens();
 const Stack = createNativeStackNavigator();
@@ -24,6 +25,10 @@ function MyStack() {
       options={{ 
         headerTitle:"Mohapiphup Admin",
         headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />) }} />
+    
+    <Stack.Screen
+      name="DetailScreen"
+      component={DetailScreen}/>
     </Stack.Navigator>
   );
 }

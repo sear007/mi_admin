@@ -2,31 +2,30 @@ import React, { Component } from 'react';
 import { StyleSheet,View, Text, Dimensions,TouchableOpacity,ScrollView,Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ListItem, Avatar,SearchBar,Button } from 'react-native-elements';
-
+import { BulletList } from 'react-content-loader/native'
 export default class HomeScreen extends Component {
-  
   constructor(props) {
     super(props);
     this.state = {
       categories: [],
+      categoriesLoading:true,
       searchData: [],
       expireData: [],
       search:'',
       searchLoading:false
     };
   }
-
   componentDidMount(){
     this.requestCategory();
     this.requestExpireLicense();
   }
-
   requestCategory = async () =>{
     await fetch('https://equipment.mohapiphup.com/api/categories_app')
     .then((response)=>response.json())
     .then((responseJson)=>{
       this.setState({
-        categories: responseJson
+        categories: responseJson,
+        categoriesLoading:false,
       });
     }).catch(error=>{
       console.log(error);
@@ -70,10 +69,8 @@ export default class HomeScreen extends Component {
   render() {
     const { search } = this.state;
     return (
-      
       <ScrollView>
       <View>
-        {/* search area */}
         <View style={{ marginBottom:10 }}>
           <SearchBar
             placeholder="Search Equipment"
@@ -86,10 +83,11 @@ export default class HomeScreen extends Component {
             showLoading={this.state.searchLoading}
           />
         </View>
+        { this.state.categoriesLoading ? <BulletList />:<View/> }
         { this.state.searchData.length > 0 ?
           this.state.searchData.map((d,i)=>(
             <View style={{ marginBottom:10}}>
-              <ListItem onPress={()=>alert('ok')} key={i} bottomDivider>
+              <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={i} bottomDivider>
                 <Avatar activeOpacity={0.7} size="large" source={{uri: `https://equipment.mohapiphup.com/${d.thumbnail.thumbnail}`}} />
                   <ListItem.Content>
                     <ListItem.Title>{d.old_equipment_id}</ListItem.Title>
@@ -100,9 +98,8 @@ export default class HomeScreen extends Component {
               </ListItem>
             </View>
           )):<View />}
-          {/* search area */}
-          
-        {/* Categories with posts count */}
+
+        {this.state.categoriesLoading ? <BulletList />:<View/>}
         <View style={[styles.countBoxWrapper,styles.container]}>
           {this.state.categories.map(d=>(
           <View style={styles.countBox}>
@@ -111,9 +108,6 @@ export default class HomeScreen extends Component {
           </View>
           ))}
         </View>
-        {/* Categories with posts count */}
-
-
             {this.state.expireData.length > 0 ?
             <View>
             <View style={styles.headerBox}>
@@ -127,7 +121,7 @@ export default class HomeScreen extends Component {
               </View>
               {this.state.expireData.map((d,i)=>(
                 i<5 ?
-                <ListItem key={i} bottomDivider>
+                <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={i} bottomDivider>
                 <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
                 <ListItem.Content>
                     <ListItem.Subtitle>{d.old_equipment_id}</ListItem.Subtitle>
@@ -136,33 +130,7 @@ export default class HomeScreen extends Component {
                   <ListItem.Chevron />
                 </ListItem>:<View />
               ))}
-            
             </View>:<View />}
-
-        {/* <View style={styles.headerBox}>
-          <Text style={{ marginBottom:10 }}>Expired Insurance</Text>
-        </View>
-        <ListItem key={1} bottomDivider>
-          <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
-          <ListItem.Content>
-              <ListItem.Title>Title</ListItem.Title>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem>
-          <ListItem key={1} bottomDivider>
-          <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
-          <ListItem.Content>
-              <ListItem.Title>Title</ListItem.Title>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem>
-          <ListItem key={1} bottomDivider>
-          <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
-          <ListItem.Content>
-              <ListItem.Title>Title</ListItem.Title>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem> */}
       </View>
       </ScrollView>
     );
@@ -228,14 +196,10 @@ const styles = StyleSheet.create({
   white:{
     color:"#fff"
   },
-
-  
-
   btnAppWrapper:{
     height:130,
     marginBottom:10,
   },
-
   btnInner:{
     alignItems:"center",
     justifyContent:"center",
