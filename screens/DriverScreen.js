@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet } from 'react-native';
+import { View, Text,StyleSheet,Linking,ScrollView} from 'react-native';
 import ImageView from "react-native-image-viewing";
 import { SliderBox } from "react-native-image-slider-box";
-import { Button } from 'react-native-elements';
 import { BulletList } from 'react-content-loader/native'
+import { Button,Input,Icon } from 'react-native-elements';
 class DriverScreen extends Component {
   constructor(props) {
     super(props);
@@ -11,8 +11,11 @@ class DriverScreen extends Component {
         postLoading:true,
         driver_photo:'',
         driver_name:'',
+        driver_name_input:false,
         tel_driver:'',
+        tel_driver_input:false,
         position_driver:'',
+        position_driver_input:false,
         dob_driver:'',
         license_no_driver:'',
         license_issued_date:'',
@@ -52,6 +55,10 @@ class DriverScreen extends Component {
     })
   }
   render() {
+    this.props.navigation.setOptions({ 
+      title: 'hi',
+      tabBarVisible: false,
+    });
     const web = "https://equipment.mohapiphup.com/"
     const images = [
         this.state.driver_photo && web+this.state.driver_photo,
@@ -70,35 +77,72 @@ class DriverScreen extends Component {
         )
     } else {
         return (
-        <View style={{ marginTop:20 }}>
-            <SliderBox
-                images={images.filter(function(url){ return url != null })}
-                onCurrentImagePressed={(index)=> this.setState({visible:true,index})}
-                dotColor="#FFEE58"
-                inactiveDotColor="#90A4AE"
-                autoplay
-                circleLoop
-                resizeMethod={'resize'}
-                resizeMode={'contain'}
-            />
-            <ImageView
-            images={imagesView.filter(function(url){ return url != null})}
-            imageIndex={this.state.index}
-            visible={this.state.visible}
-            onRequestClose={()=>this.setState({visible:false})}
-            imageLoadingColor="#2196F3"
-        />
+          <ScrollView>
+            <View >
+              <SliderBox
+                  sliderBoxHeight={300}
+                  images={images.filter(function(url){ return url != null })}
+                  onCurrentImagePressed={(index)=> this.setState({visible:true,index})}
+                  dotColor="#FFEE58"
+                  inactiveDotColor="#90A4AE"
+                  autoplay
+                  circleLoop
+                  resizeMethod={'resize'}
+                  resizeMode={'cover'}
+                  imageLoadingColor="#2196F3"
+              />
+              <ImageView
+                  images={imagesView.filter(function(url){ return url != null})}
+                  imageIndex={this.state.index}
+                  visible={this.state.visible}
+                  onRequestClose={()=>this.setState({visible:false})}
+                  
+              />
+            <View style={styles.container}>  
+                {this.state.driver_name&&<View style={styles.list}>
+                  {this.state.driver_name_input ?
+                  <Input
+                  autoFocus={true}
+                  inputContainerStyle={{height:20,borderBottomWidth:0}}
+                  containerStyle={{ paddingHorizontal:0,height:20}}
+                  value={this.state.driver_name} 
+                  rightIcon={
+                    <Icon name="save" onPress={()=>this.setState({driver_name_input:false})} size={30} />
+                  }
+                  onChangeText={(driver_name)=>this.setState({ driver_name })}
+                  />:
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.Text}><Text style={styles.TextMute}>Name:</Text> {this.state.driver_name}</Text>
+                    <Icon onPress={()=> this.setState({driver_name_input:true}) } name="edit" size={30} />
+                  </View>
+                  }
+                </View>}
 
-        <View style={styles.container}>  
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Name:</Text> {this.state.driver_name}</Text></View>
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Phone:</Text> {this.state.tel_driver}</Text></View>
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Positon:</Text> {this.state.position_driver}</Text></View>
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>DOB:</Text> {this.state.dob_driver}</Text></View>
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>License No:</Text> {this.state.license_no_driver}</Text></View>
-            <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Expire On:</Text> {this.state.license_expiry_date}</Text></View>
-        </View>
-
-        </View>
+                {this.state.tel_driver&&<View style={styles.list}>
+                  {this.state.tel_driver_input ?
+                  <Input
+                  autoFocus={true}
+                  inputContainerStyle={{height:20,borderBottomWidth:0}}
+                  containerStyle={{ paddingHorizontal:0,height:20}}
+                  value={this.state.tel_driver} 
+                  rightIcon={
+                    <Icon name="save" onPress={()=>this.setState({tel_driver_input:false})} size={30} />
+                  }
+                  onChangeText={(tel_driver)=>this.setState({ tel_driver })}
+                  />:
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.Text}><Text onPress={()=>Linking.openURL(`tel:${this.state.tel_driver}`)} style={styles.TextMute}>Phone:</Text> {this.state.tel_driver}</Text>
+                    <Icon onPress={()=> this.setState({tel_driver_input:true}) } name="edit" size={30} />
+                  </View>
+                  }
+                </View>}
+                {this.state.position_driver&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Positon:</Text> {this.state.position_driver}</Text></View>}
+                {this.state.dob_driver&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>DOB:</Text> {this.state.dob_driver}</Text></View>}
+                {this.state.license_no_driver&& <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>License No:</Text> {this.state.license_no_driver}</Text></View>}
+                {this.state.license_expiry_date&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Expire On:</Text> {this.state.license_expiry_date}</Text></View>}
+            </View>
+          </View>
+        </ScrollView>
         );
     }
     
@@ -107,6 +151,11 @@ class DriverScreen extends Component {
 export default DriverScreen;
 
 const styles = StyleSheet.create({
+    rowBetween:{
+      flexDirection:"row",
+      flexWrap:"wrap",
+      justifyContent:"space-between"
+    },
     list:{
         paddingTop:5,
         paddingBottom:5,

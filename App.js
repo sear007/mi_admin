@@ -15,6 +15,11 @@ enableScreens();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
+
+function editScreen(){
+  return <View><Text>Edit Screen</Text></View>
+}
+
 function MyStack() {
   const navigation = useNavigation();
   return (
@@ -25,10 +30,16 @@ function MyStack() {
       options={{ 
         headerTitle:"Mohapiphup Admin",
         headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />) }} />
-    
+      <Stack.Screen 
+      name="Edit"
+      component={editScreen}
+      />
     <Stack.Screen
       name="DetailScreen"
-      component={DetailScreen}/>
+      component={DetailScreen}
+      options={{
+        headerBackTitleVisible:false
+      }}/>
     </Stack.Navigator>
   );
 }
