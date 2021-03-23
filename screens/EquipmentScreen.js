@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet,Linking,Image } from 'react-native';
+import { View, Text,StyleSheet,Linking,Image,ActivityIndicator } from 'react-native';
 import ImageView from "react-native-image-viewing";
 import { SliderBox } from "react-native-image-slider-box";
 import { BulletList } from 'react-content-loader/native'
@@ -9,6 +9,8 @@ import { Icon,Button } from 'react-native-elements';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
+import Modal from 'react-native-modal';
+import { Dimensions } from 'react-native';
 
 class EquipmentScreen extends Component {
   constructor(props) {
@@ -38,13 +40,32 @@ class EquipmentScreen extends Component {
         index:0,
         visibleInspection:false,
         indexInspection:0,
+
+        uploadLoading: false,
+        removeLoading: false,
+        modalVisible:false,
+        message: "",
+
     };
   }
   componentDidMount(){
-      
     this.requestPostData();
   }
 
+
+  modal = () => {
+    return(
+      <Modal animationType="slide" transparent={true} visible={this.state.modalVisible}>
+        <View style={styles.modalWrapper}>
+          <View><Text>{this.state.message}</Text></View>
+          <View style={{justifyContent:"space-between"}}>
+          <Button icon={<Icon type="font-awesome" color="#555" size={18} name="close" />} type="clear" containerStyle={styles.modalCloseBtn} onPress={() => this.setState({modalVisible:false})} />
+              
+          </View>
+        </View>
+      </Modal>
+    )
+  }
 
 
   pickImage = async () =>{
@@ -54,7 +75,6 @@ class EquipmentScreen extends Component {
       aspect: [4, 3],
       quality: 1,
     });
-    console.log(result);
     if (!result.cancelled) {
       this.uploadImage(result);
     }
@@ -73,12 +93,15 @@ class EquipmentScreen extends Component {
       },
     }).then(response=>response.json())
       .then(response => {
-        console.warn(response);
-        // if(response.status){
-        //   console.warn(response.message);
-        // }else{
-        //   alert("Error Network...");
-        // }
+        if(response.status){
+
+          this.setState({  modalVisible:true,message:response.message });
+          this.requestPostData();
+          this.setState({removeLoading:false})
+        }else{
+          this.setState({  modalVisible:true,message:"Error Network" });
+          this.setState({removeLoading:false})
+        }
       });
   }
 
@@ -87,6 +110,7 @@ class EquipmentScreen extends Component {
     const {post_id} = route.params;
     let base_url = "https://equipment.mohapiphup.com/api/upload_image";
     let uploadData = new FormData();
+    this.setState({uploadLoading:true})
     uploadData.append("image", {
       uri: result.uri,
       type: 'image/jpeg',
@@ -104,9 +128,12 @@ class EquipmentScreen extends Component {
     }).then(response=>response.json())
       .then(response => {
         if(response.status){
-          console.warn(response.message);
+          this.setState({  modalVisible:true,message:response.message });
+          this.requestPostData();
+          this.setState({uploadLoading:false});
         }else{
-          alert("Error Network...");
+          this.setState({  modalVisible:true,message:"Error Network" });
+          this.setState({uploadLoading:false});
         }
       });
   }
@@ -178,7 +205,9 @@ class EquipmentScreen extends Component {
     } else {
         return (
         <ScrollView>
+
         <View>
+            {this.modal()}
             <SliderBox
                 sliderBoxHeight={300}
                 images={images.filter(function(url){ return url != null })}
@@ -235,18 +264,32 @@ class EquipmentScreen extends Component {
         </View>
 
 
+        
+
+          {this.state.removeLoading && 
+          <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+            <Text style={{marginBottom:5}}>Please wait! Image is removing</Text>
+            <ActivityIndicator />
+          </View>}
         <View style={{ flexDirection:"row",padding: 15, }}>
           {
             this.state.photos.map(image=>(
               <View style={styles.btnImage}>
-                <Image style={{ width:100,height:100 }} source={{ uri: web+image.path}} />
-                <Button onPress={()=> this.destroyImage(image.id)} buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+                <Image style={{ width:100,height:100 }} source={{ uri: web+image.thumbnail}} />
+                <Button onPress={()=> this.setState({removeLoading:true},()=>this.destroyImage(image.id))} buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
               </View>
             ))
           }
-          <TouchableOpacity onPress={()=> this.pickImage()}>
+          <TouchableOpacity onPress={()=> this.pickImage()} disabled={this.state.uploadLoading}>
             <View style={styles.btnImage}>
+            {this.state.uploadLoading ? 
+              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                <Text style={{marginBottom:5}}>Uploading</Text>
+                <ActivityIndicator />
+              </View>:
               <Icon name="plus" type="font-awesome" color="#999" size={30} />
+            }
+              
             </View>
           </TouchableOpacity>
         </View>
@@ -324,4 +367,26 @@ const styles = StyleSheet.create({
       borderTopWidth:2,
       borderTopColor: "#00357a",
     },
+    modalCloseBtn:{
+        position:"absolute",
+        right:-10,
+        bottom:30,
+        width:35,
+        height:35,
+        backgroundColor:"#ccc",
+        borderRadius:30,
+        alignItems:"center",
+        justifyContent:"center",
+        borderColor:"#999",
+        borderWidth:.5
+    },
+    modalWrapper:{
+      width:"100%",
+      height: '10%',
+      marginTop: 'auto',
+      backgroundColor:'#ddd',
+      borderRadius:15,
+      padding:10,
+      justifyContent:"center",
+    }
 });
