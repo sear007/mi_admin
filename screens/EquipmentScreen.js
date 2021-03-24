@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet,Linking,Image,ActivityIndicator } from 'react-native';
+import { View, Text,StyleSheet,Linking,Image,ActivityIndicator,RefreshControl,Dimensions } from 'react-native';
 import ImageView from "react-native-image-viewing";
 import { SliderBox } from "react-native-image-slider-box";
 import { BulletList } from 'react-content-loader/native'
-import { Link } from '@react-navigation/native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { Icon,Button } from 'react-native-elements';
-import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import Constants from 'expo-constants';
 import Modal from 'react-native-modal';
-import { Dimensions } from 'react-native';
 
 class EquipmentScreen extends Component {
   constructor(props) {
@@ -45,6 +41,7 @@ class EquipmentScreen extends Component {
         removeLoading: false,
         modalVisible:false,
         message: "",
+        refreshing:false
 
     };
   }
@@ -59,7 +56,7 @@ class EquipmentScreen extends Component {
         <View style={styles.modalWrapper}>
           <View><Text>{this.state.message}</Text></View>
           <View style={{justifyContent:"space-between"}}>
-          <Button icon={<Icon type="font-awesome" color="#555" size={18} name="close" />} type="clear" containerStyle={styles.modalCloseBtn} onPress={() => this.setState({modalVisible:false})} />
+            <Button icon={<Icon type="font-awesome" color="#555" size={18} name="close" />} type="clear" containerStyle={styles.modalCloseBtn} onPress={() => this.setState({modalVisible:false})} />
               
           </View>
         </View>
@@ -68,7 +65,7 @@ class EquipmentScreen extends Component {
   }
 
 
-  pickImage = async () =>{
+  pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -94,12 +91,11 @@ class EquipmentScreen extends Component {
     }).then(response=>response.json())
       .then(response => {
         if(response.status){
-
-          this.setState({  modalVisible:true,message:response.message });
+          this.setState({modalVisible:true,message:response.message });          
           this.requestPostData();
           this.setState({removeLoading:false})
         }else{
-          this.setState({  modalVisible:true,message:"Error Network" });
+          this.setState({modalVisible:true,message:"Error Network" });
           this.setState({removeLoading:false})
         }
       });
@@ -132,12 +128,13 @@ class EquipmentScreen extends Component {
           this.requestPostData();
           this.setState({uploadLoading:false});
         }else{
-          this.setState({  modalVisible:true,message:"Error Network" });
+          this.setState({ modalVisible:true,message:"Error Network" });
           this.setState({uploadLoading:false});
         }
       });
   }
 
+  onRefresh = () => { this.requestPostData().then(()=>this.setState({refreshing:false})); }
 
   requestPostData = async () => {
     const {route} = this.props;
@@ -204,7 +201,13 @@ class EquipmentScreen extends Component {
         )
     } else {
         return (
-        <ScrollView>
+        <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this.onRefresh}
+          />
+        }>
 
         <View>
             {this.modal()}
@@ -271,11 +274,11 @@ class EquipmentScreen extends Component {
             <Text style={{marginBottom:5}}>Please wait! Image is removing</Text>
             <ActivityIndicator />
           </View>}
-        <View style={{ flexDirection:"row",padding: 15, }}>
+        <View style={{ flexDirection:"row",justifyContent:"space-between",flexWrap:'wrap',padding: 15, }}>
           {
             this.state.photos.map(image=>(
               <View style={styles.btnImage}>
-                <Image style={{ width:100,height:100 }} source={{ uri: web+image.thumbnail}} />
+                <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-23,height:100 }} source={{ uri: web+image.thumbnail}} />
                 <Button onPress={()=> this.setState({removeLoading:true},()=>this.destroyImage(image.id))} buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
               </View>
             ))
@@ -287,9 +290,12 @@ class EquipmentScreen extends Component {
                 <Text style={{marginBottom:5}}>Uploading</Text>
                 <ActivityIndicator />
               </View>:
-              <Icon name="plus" type="font-awesome" color="#999" size={30} />
-            }
+              <View>
+                <Icon name="plus" type="font-awesome" color="#999" size={30} />
+                <Text style={{ color:"#999",marginTop:5 }}>More Picture</Text>
+              </View>
               
+            }
             </View>
           </TouchableOpacity>
         </View>
@@ -317,7 +323,7 @@ const styles = StyleSheet.create({
   },
     btnImage:{
       position:'relative',
-      width:100,
+      width:Dimensions.get('window').width / 3-23,
       height:100,
       margin:5,
       backgroundColor:"#ccc",

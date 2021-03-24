@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet,Linking,ScrollView} from 'react-native';
+import { View, Text,StyleSheet,Linking,Image,ActivityIndicator,RefreshControl,Dimensions } from 'react-native';
 import ImageView from "react-native-image-viewing";
 import { SliderBox } from "react-native-image-slider-box";
 import { BulletList } from 'react-content-loader/native'
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { Button,Input,Icon } from 'react-native-elements';
+import * as ImagePicker from 'expo-image-picker';
+import Modal from 'react-native-modal';
 class DriverScreen extends Component {
   constructor(props) {
     super(props);
@@ -24,13 +27,125 @@ class DriverScreen extends Component {
         indentification_photo:'',
         driver_license_photo:'',
         visible:false,
-        index:0
+        index:0,
+
+
+        uploadLoadingDriverPhoto: false,
+        removeLoadingDriverPhoto: false,
+
+        uploadLoadingIdentification: false,
+        removeLoadingIdentification: false,
+
+        uploadLoadingDriverLicense: false,
+        removeLoadingDriverLicense: false,
+
+        modalVisible:false,
+        message: "",
+        refreshing:false
+
     };
   }
   componentDidMount(){
       
     this.requestPostData();
   }
+  onRefresh = () => { this.requestPostData().then(()=>this.setState({refreshing:false})); }
+  modal = () => {
+    return(
+      <Modal animationType="slide" transparent={true} visible={this.state.modalVisible}>
+        <View style={styles.modalWrapper}>
+          <View><Text>{this.state.message}</Text></View>
+          <View style={{justifyContent:"space-between"}}>
+            <Button icon={<Icon type="font-awesome" color="#555" size={18} name="close" />} type="clear" containerStyle={styles.modalCloseBtn} onPress={() => this.setState({modalVisible:false})} />
+          </View>
+        </View>
+      </Modal>
+    )
+  }
+  pickImageDriverPhoto = async () =>{
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.cancelled) {
+      this.uploadImage(result);
+    }
+  }
+  pickImageIdentification = async () =>{
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.cancelled) {
+      this.uploadImage(result);
+    }
+  }
+  pickImageDriverLicense = async () =>{
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.cancelled) {
+      this.uploadImageDriverLicense(result);
+    }
+  }
+  destroyImageDriverLicense = async () =>{
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message});
+          this.requestPostData();
+          this.setState({uploadLoadingIdentification:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({uploadLoadingIdentification:false});
+        }
+      });
+  }
+  uploadImageDriverLicense = async (result) =>{
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverLicense";
+    let uploadData = new FormData();
+    this.setState({uploadLoadingDriverLicense:true})
+    uploadData.append("image", { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'});
+    uploadData.append('id',post_id)
+    uploadData.append('name_driver',this.state.driver_name)
+    uploadData.append('position_driver',this.state.position_driver)
+    uploadData.append('dob_driver',this.state.dob_driver)
+    uploadData.append('tel_driver',this.state.tel_driver)
+    uploadData.append('license_no_driver',this.state.license_no_driver)
+    uploadData.append('license_issued_date',this.state.license_issued_date)
+    uploadData.append('driver_photo',this.state.driver_photo)
+    uploadData.append('indentification_photo',this.state.indentification_photo)
+    uploadData.append('driver_license_photo', { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
+    uploadData.append('driver_license_photo_old', this.state.driver_license_photo)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message });
+          this.requestPostData();
+          this.setState({uploadLoadingDriverLicense:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({uploadLoadingDriverLicense:false});
+        }
+      });
+  }
+  
   requestPostData = async () => {
     const {route} = this.props;
     const {post_id} = route.params;
@@ -55,10 +170,6 @@ class DriverScreen extends Component {
     })
   }
   render() {
-    this.props.navigation.setOptions({ 
-      title: 'hi',
-      tabBarVisible: false,
-    });
     const web = "https://equipment.mohapiphup.com/"
     const images = [
         this.state.driver_photo && web+this.state.driver_photo,
@@ -77,16 +188,16 @@ class DriverScreen extends Component {
         )
     } else {
         return (
-          <ScrollView>
+          <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.onRefresh}
+            />
+          }>
+            {this.modal()}
             <View >
-              <SliderBox
-                  sliderBoxHeight={300}
-                  images={images.filter(function(url){ return url != null })}
-                  onCurrentImagePressed={(index)=> this.setState({visible:true,index})}
-                  dotColor="#FFEE58"
-                  inactiveDotColor="#90A4AE"
-                  autoplay
-                  circleLoop
+              <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != null })} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop
                   resizeMethod={'resize'}
                   resizeMode={'cover'}
                   imageLoadingColor="#2196F3"
@@ -141,6 +252,61 @@ class DriverScreen extends Component {
                 {this.state.license_no_driver&& <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>License No:</Text> {this.state.license_no_driver}</Text></View>}
                 {this.state.license_expiry_date&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Expire On:</Text> {this.state.license_expiry_date}</Text></View>}
             </View>
+
+
+          
+          <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
+            {/* Driver */}
+          <View style={styles.btnImage}>
+            <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />
+            <Button onPress={()=> console.warn('remove driver photo') } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+            <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+          </View>
+
+          {/* Identification */}
+          <View style={styles.btnImage}>
+            <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />
+            <Button onPress={()=> console.warn('remove identification') } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+            <Button onPress={()=> console.warn('edit identification') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+          </View>
+
+          {/* Driver License */}
+          {
+            this.state.driver_license_photo ?
+              !this.state.removeLoadingDriverLicense ?
+              <View style={styles.btnImage}>
+                {this.state.driver_license_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_license_photo}`}} />}
+                <Button onPress={()=> this.destroyImageDriverLicense() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+                <Button onPress={()=> console.warn('edit driver license') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+              </View>
+              :
+              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                <Text style={{marginBottom:5}}>Removing</Text>
+                <ActivityIndicator />
+              </View>
+
+            :
+            <TouchableOpacity onPress={()=> this.pickImageDriverLicense()} disabled={this.state.uploadLoadingDriverLicense}>
+              <View style={styles.btnImage}>
+              {this.state.uploadLoadingDriverLicense ? 
+                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                  <Text style={{marginBottom:5}}>Uploading</Text>
+                  <ActivityIndicator />
+                </View>
+                :
+                <View>
+                  <Icon name="plus" type="font-awesome" color="#999" size={30} />
+                  <Text style={{ color:"#999",marginTop:5 }}>License</Text>
+                </View>
+              }
+              </View>
+            </TouchableOpacity>
+          }
+          </View>
+          
+
+
+
           </View>
         </ScrollView>
         );
@@ -172,4 +338,89 @@ const styles = StyleSheet.create({
        color:"#999",
        fontSize:17
     },
+    btnCircleRemove:{
+      width:35,
+      height:35,
+      backgroundColor:"#e5d2d2",
+      borderRadius:35,
+      borderColor:"#c85656",
+      borderWidth:1,
+    },
+    btnCircleEdit:{
+      width:35,
+      height:35,
+      backgroundColor:"#9fdaf4",
+      borderRadius:35,
+      borderColor:"#0398d8",
+      borderWidth:1,
+    },
+    btnEdit:{
+      position: 'absolute',
+      right:-5,
+      top:35,
+    },
+    
+    btnRemove:{
+      position: 'absolute',
+      right:-5,
+      top:-5,
+    },
+      btnImage:{
+        position:'relative',
+        width:Dimensions.get('window').width / 3-12,
+        height:100,
+        margin:5,
+        backgroundColor:"#ccc",
+        alignItems:"center",
+        justifyContent:"center",
+        borderRadius:10,
+        shadowColor: "#000",
+        shadowOffset:{
+          width: 0,
+          height: 1,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+        elevation: 5,
+      },
+      headerBox:{
+        flexDirection:"row",
+        flexWrap:'wrap', 
+        justifyContent:'space-between',
+        alignItems:"center",
+        padding: 10,
+        backgroundColor:"#b2cbeb",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 1,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+        elevation: 5,
+        borderTopWidth:2,
+        borderTopColor: "#00357a",
+      },
+      modalCloseBtn:{
+          position:"absolute",
+          right:-10,
+          bottom:30,
+          width:35,
+          height:35,
+          backgroundColor:"#ccc",
+          borderRadius:30,
+          alignItems:"center",
+          justifyContent:"center",
+          borderColor:"#999",
+          borderWidth:.5
+      },
+      modalWrapper:{
+        width:"100%",
+        height: '10%',
+        marginTop: 'auto',
+        backgroundColor:'#ddd',
+        borderRadius:15,
+        padding:10,
+        justifyContent:"center",
+      }
 });
