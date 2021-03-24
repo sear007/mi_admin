@@ -62,7 +62,7 @@ class DriverScreen extends Component {
       </Modal>
     )
   }
-  pickImageDriverPhoto = async () =>{
+  pickImageDriverPhoto = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -163,7 +163,7 @@ class DriverScreen extends Component {
         license_expiry_date:responseJson.operator.license_expiry_date,
         driver_photo:responseJson.operator.driver_photo,
         indentification_photo:responseJson.operator.indentification_photo,
-        driver_license_photo:responseJson.operator.driver_license_photo,
+        driver_license_photo:responseJson.operator.driver_license_photo&&responseJson.operator.driver_license_photo,
       });
     }).catch(error=>{
       console.log(error);
@@ -181,7 +181,6 @@ class DriverScreen extends Component {
         this.state.indentification_photo && { uri: web+this.state.indentification_photo},
         this.state.driver_license_photo && { uri: web+this.state.driver_license_photo},
     ];
-    
     if (this.state.postLoading) {
         return(
             <View ><BulletList width="100%" /></View>
@@ -196,14 +195,16 @@ class DriverScreen extends Component {
             />
           }>
             {this.modal()}
+            
             <View >
-              <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != null })} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop
+
+            <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != "" })} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop
                   resizeMethod={'resize'}
                   resizeMode={'cover'}
                   imageLoadingColor="#2196F3"
               />
               <ImageView
-                  images={imagesView.filter(function(url){ return url != null})}
+                  images={imagesView.filter(function(url){ return url != ""})}
                   imageIndex={this.state.index}
                   visible={this.state.visible}
                   onRequestClose={()=>this.setState({visible:false})}
@@ -256,12 +257,36 @@ class DriverScreen extends Component {
 
           
           <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
-            {/* Driver */}
-          <View style={styles.btnImage}>
-            <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />
-            <Button onPress={()=> console.warn('remove driver photo') } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-            <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
-          </View>
+
+            {/* Driver Photo */}
+            {this.state.driver_photo ?
+              !this.state.removeLoadingDriverPhoto ?
+              <View style={styles.btnImage}>
+                {this.state.driver_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
+                <Button onPress={()=> this.destroyImageDriverPhoto() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+                <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+              </View>
+              :
+              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                <Text style={{marginBottom:5}}>Removing</Text>
+                <ActivityIndicator />
+              </View>
+            :
+            <TouchableOpacity onPress={ ()=> this.pickImageDriverPhoto()} disabled={this.state.uploadLoadingDriverPhoto}>
+              <View style={styles.btnImage}>
+              {this.state.uploadLoadingDriverPhoto ? 
+                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                  <Text style={{marginBottom:5}}>Uploading</Text>
+                  <ActivityIndicator />
+                </View>
+                :
+                <View>
+                  <Icon name="plus" type="font-awesome" color="#999" size={30} />
+                  <Text style={{ color:"#999",marginTop:5 }}>License</Text>
+                </View>
+              }
+              </View>
+            </TouchableOpacity>}
 
           {/* Identification */}
           <View style={styles.btnImage}>
@@ -302,6 +327,8 @@ class DriverScreen extends Component {
               </View>
             </TouchableOpacity>
           }
+
+
           </View>
           
 
