@@ -87,7 +87,7 @@ export default class HomeScreen extends Component {
         { this.state.searchData.length > 0 ?
           this.state.searchData.map((d,i)=>(
             <View style={{ marginBottom:10}}>
-              <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={i} bottomDivider>
+              <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={`categories_${i}`} bottomDivider>
                 <Avatar activeOpacity={0.7} size="large" source={{uri: `https://equipment.mohapiphup.com/${d.thumbnail.thumbnail}`}} />
                   <ListItem.Content>
                     <ListItem.Title>{d.old_equipment_id}</ListItem.Title>
@@ -121,7 +121,7 @@ export default class HomeScreen extends Component {
               </View>
               {this.state.expireData.map((d,i)=>(
                 i<5 ?
-                <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={i} bottomDivider>
+                <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={`expired_insture${i}`} bottomDivider>
                 <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
                 <ListItem.Content>
                     <ListItem.Subtitle>{d.old_equipment_id}</ListItem.Subtitle>

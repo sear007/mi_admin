@@ -46,7 +46,6 @@ class DriverScreen extends Component {
     };
   }
   componentDidMount(){
-      
     this.requestPostData();
   }
   onRefresh = () => { this.requestPostData().then(()=>this.setState({refreshing:false})); }
@@ -70,7 +69,7 @@ class DriverScreen extends Component {
       quality: 1,
     });
     if (!result.cancelled) {
-      this.uploadImage(result);
+      this.uploadImageDriverPhoto(result);
     }
   }
   pickImageIdentification = async () =>{
@@ -81,7 +80,7 @@ class DriverScreen extends Component {
       quality: 1,
     });
     if (!result.cancelled) {
-      this.uploadImage(result);
+      this.uploadImageIdentification(result);
     }
   }
   pickImageDriverLicense = async () =>{
@@ -95,17 +94,21 @@ class DriverScreen extends Component {
       this.uploadImageDriverLicense(result);
     }
   }
-  destroyImageDriverLicense = async () =>{
+
+  uploadImageIdentification = async (result) => {
     const {route} = this.props;
     const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
+    let base_url = "https://equipment.mohapiphup.com/api/uploadImageIdentification";
     let uploadData = new FormData();
+    this.setState({uploadLoadingIdentification:true})
     uploadData.append('id',post_id)
+    uploadData.append('indentification_photo',{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
+    uploadData.append('indentification_photo_old', this.state.indentification_photo?this.state.indentification_photo:null)
     fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
     .then(response=>response.json())
     .then(response => {
         if(response.status){
-          this.setState({modalVisible:true,message:response.message});
+          this.setState({modalVisible:true,message:response.message });
           this.requestPostData();
           this.setState({uploadLoadingIdentification:false});
         }else{
@@ -114,22 +117,83 @@ class DriverScreen extends Component {
         }
       });
   }
+  destroyImageIdentification = () => {
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/destroyImageIdentification";
+    this.setState({removeLoadingIdentification:true});
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message});
+          this.requestPostData();
+          this.setState({removeLoadingIdentification:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({removeLoadingIdentification:false});
+        }
+      });
+  }
+  
+  
+
+  
+  uploadImageDriverPhoto = async (result) =>{
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverPhoto";
+    let uploadData = new FormData();
+    this.setState({uploadLoadingDriverPhoto:true})
+    uploadData.append("image", { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'});
+    uploadData.append('id',post_id)
+    uploadData.append('driver_photo',{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
+    uploadData.append('driver_photo_old', this.state.driver_photo?this.state.driver_photo:null)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message });
+          this.requestPostData();
+          this.setState({uploadLoadingDriverPhoto:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({uploadLoadingDriverPhoto:false});
+        }
+      });
+  }
+  
+
+  destroyImageDriverPhoto = () => {
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverPhoto";
+    this.setState({removeLoadingDriverPhoto:true});
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message});
+          this.requestPostData();
+          this.setState({removeLoadingDriverPhoto:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({removeLoadingDriverPhoto:false});
+        }
+      });
+  }
+
   uploadImageDriverLicense = async (result) =>{
     const {route} = this.props;
     const {post_id} = route.params;
     let base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverLicense";
     let uploadData = new FormData();
     this.setState({uploadLoadingDriverLicense:true})
-    uploadData.append("image", { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'});
     uploadData.append('id',post_id)
-    uploadData.append('name_driver',this.state.driver_name)
-    uploadData.append('position_driver',this.state.position_driver)
-    uploadData.append('dob_driver',this.state.dob_driver)
-    uploadData.append('tel_driver',this.state.tel_driver)
-    uploadData.append('license_no_driver',this.state.license_no_driver)
-    uploadData.append('license_issued_date',this.state.license_issued_date)
-    uploadData.append('driver_photo',this.state.driver_photo)
-    uploadData.append('indentification_photo',this.state.indentification_photo)
     uploadData.append('driver_license_photo', { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
     uploadData.append('driver_license_photo_old', this.state.driver_license_photo)
     fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
@@ -145,6 +209,26 @@ class DriverScreen extends Component {
         }
       });
   }
+  destroyImageDriverLicense = async () =>{
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
+    this.setState({removeLoadingIdentification:true});
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+        if(response.status){
+          this.setState({modalVisible:true,message:response.message});
+          this.requestPostData();
+          this.setState({removeLoadingIdentification:false});
+        }else{
+          this.setState({modalVisible:true,message:"Error Network" });
+          this.setState({removeLoadingIdentification:false});
+        }
+      });
+  }
   
   requestPostData = async () => {
     const {route} = this.props;
@@ -154,16 +238,16 @@ class DriverScreen extends Component {
     .then((responseJson)=>{
       this.setState({
         postLoading:false,
-        driver_name: responseJson.operator.name_driver,
-        tel_driver:responseJson.operator.tel_driver,
-        position_driver:responseJson.operator.position_driver,
-        dob_driver:responseJson.operator.dob_driver,
-        license_no_driver:responseJson.operator.license_no_driver,
-        license_issued_date:responseJson.operator.license_issued_date,
-        license_expiry_date:responseJson.operator.license_expiry_date,
-        driver_photo:responseJson.operator.driver_photo,
-        indentification_photo:responseJson.operator.indentification_photo,
-        driver_license_photo:responseJson.operator.driver_license_photo&&responseJson.operator.driver_license_photo,
+        driver_name: responseJson.operator.name_driver?responseJson.operator.name_driver:null,
+        tel_driver:responseJson.operator.tel_driver?responseJson.operator.tel_driver:null,
+        position_driver:responseJson.operator.position_driver?responseJson.operator.position_driver:null,
+        dob_driver:responseJson.operator.dob_driver?responseJson.operator.dob_driver:null,
+        license_no_driver:responseJson.operator.license_no_driver?responseJson.operator.license_no_driver:null,
+        license_issued_date:responseJson.operator.license_issued_date?responseJson.operator.license_issued_date:null,
+        license_expiry_date:responseJson.operator.license_expiry_date?responseJson.operator.license_expiry_date:null,
+        driver_photo:responseJson.operator.driver_photo?responseJson.operator.driver_photo:null,
+        indentification_photo:responseJson.operator.indentification_photo?responseJson.operator.indentification_photo:null,
+        driver_license_photo:responseJson.operator.driver_license_photo?responseJson.operator.driver_license_photo:null,
       });
     }).catch(error=>{
       console.log(error);
@@ -198,13 +282,13 @@ class DriverScreen extends Component {
             
             <View >
 
-            <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != "" })} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop
+            <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != null})} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop
                   resizeMethod={'resize'}
                   resizeMode={'cover'}
                   imageLoadingColor="#2196F3"
               />
               <ImageView
-                  images={imagesView.filter(function(url){ return url != ""})}
+                  images={imagesView.filter(function(url){ return url != null})}
                   imageIndex={this.state.index}
                   visible={this.state.visible}
                   onRequestClose={()=>this.setState({visible:false})}
@@ -281,19 +365,42 @@ class DriverScreen extends Component {
                 </View>
                 :
                 <View>
-                  <Icon name="plus" type="font-awesome" color="#999" size={30} />
-                  <Text style={{ color:"#999",marginTop:5 }}>License</Text>
+                  <Icon name="user-plus" type="font-awesome" color="#999" size={30} />
+                  <Text style={{ color:"#999",marginTop:5 }}>Driver</Text>
                 </View>
               }
               </View>
             </TouchableOpacity>}
 
           {/* Identification */}
-          <View style={styles.btnImage}>
-            <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />
-            <Button onPress={()=> console.warn('remove identification') } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-            <Button onPress={()=> console.warn('edit identification') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
-          </View>
+          {this.state.indentification_photo ?
+              !this.state.removeLoadingIdentification ?
+              <View style={styles.btnImage}>
+                {this.state.indentification_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />}
+                <Button onPress={()=> this.destroyImageIdentification() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+                <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+              </View>
+              :
+              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                <Text style={{marginBottom:5}}>Removing</Text>
+                <ActivityIndicator />
+              </View>
+            :
+            <TouchableOpacity onPress={ ()=> this.pickImageIdentification()} disabled={this.state.uploadLoadingIdentification}>
+              <View style={styles.btnImage}>
+              {this.state.uploadLoadingIdentification ? 
+                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                  <Text style={{marginBottom:5}}>Uploading</Text>
+                  <ActivityIndicator />
+                </View>
+                :
+                <View>
+                  <Icon name="user-plus" type="font-awesome" color="#999" size={30} />
+                  <Text style={{ color:"#999",marginTop:5 }}>Identification</Text>
+                </View>
+              }
+              </View>
+            </TouchableOpacity>}
 
           {/* Driver License */}
           {
