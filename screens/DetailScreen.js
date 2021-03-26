@@ -9,6 +9,7 @@ import { View, Text } from 'react-native';
 
 import DriverScreen from './DriverScreen';
 import EquipmentScreen from './EquipmentScreen';
+import InspectionScreen from './InspectionScreen';
 
 
 
@@ -42,6 +43,7 @@ class DetailScreen extends Component {
               tabBarLabel: 'Driver Information' 
             }}>{post_id => <DriverScreen {...post_id} />}</Tab.Screen>
             <Tab.Screen initialParams={{ post_id: post_id }}  name="EquipmentInformation" options={{ tabBarLabel: 'Equipment Information' }}>{post_id => <EquipmentScreen {...post_id} />}</Tab.Screen>
+            <Tab.Screen initialParams={{ post_id: post_id }}  name="InspectionInformation" options={{ tabBarLabel: 'Inspection Information' }}>{post_id => <InspectionScreen {...post_id} />}</Tab.Screen>
         </Tab.Navigator>
     )
     

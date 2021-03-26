@@ -30,10 +30,7 @@ function MyStack() {
       options={{ 
         headerTitle:"Mohapiphup Admin",
         headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />) }} />
-      <Stack.Screen 
-      name="Edit"
-      component={editScreen}
-      />
+      <Stack.Screen  name="EditScreen" component={editScreen} />
     <Stack.Screen
       name="DetailScreen"
       component={DetailScreen}

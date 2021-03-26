@@ -153,16 +153,9 @@ class EquipmentScreen extends Component {
         insurance	    :responseJson.insurance.period_of_cover_to,
         policy	      :responseJson.insurance.policy_no,
         photos        : responseJson.photos,
-
         payment        : responseJson.payment,
         year        : responseJson.year,
         engine        : responseJson.engine,
-
-        inspection_certificate  :responseJson.inspection_certificate,
-        road_tax                :responseJson.road_tax.road_tax,
-        road_tax_2              :responseJson.road_tax.road_tax_2,
-        road_tax_sticker        :responseJson.road_tax.road_tax_sticker,
-
 
       });
     }).catch(error=>{
@@ -181,20 +174,6 @@ class EquipmentScreen extends Component {
         { uri: web+image.path}
       ))
     );
-
-    const imagesInspection = [
-      this.state.inspection_certificate && web+this.state.inspection_certificate,
-      this.state.road_tax && web+this.state.road_tax,
-      this.state.road_tax_2 && web+this.state.road_tax_2,
-      this.state.road_tax_sticker && web+this.state.road_tax_sticker,
-    ];
-    const imagesViewInspection = [
-      this.state.inspection_certificate && { uri: web+this.state.inspection_certificate},
-      this.state.road_tax && { uri: web+this.state.road_tax},
-      this.state.road_tax_2 && { uri: web+this.state.road_tax_2},
-      this.state.road_tax_sticker && { uri: web+this.state.road_tax_sticker},
-    ];
-    
     if (this.state.postLoading) {
         return(
             <View><BulletList width="100%" /></View>
@@ -243,27 +222,6 @@ class EquipmentScreen extends Component {
               {this.state.policy&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Policy:</Text> {this.state.policy}</Text></View>}
           </View>
 
-
-          {imagesInspection.filter(function(url){ return url != null }).length>0&&<View style={styles.headerBox}><Text style={{ fontSize:16,marginBottom:10 }}>Techincal Inspection</Text></View>}
-          
-          <SliderBox
-                sliderBoxHeight={300}
-                images={imagesInspection.filter(function(url){ return url != null })}
-                onCurrentImagePressed={(index)=> this.setState({visibleInspection:true,indexInspection:index})}
-                dotColor="#FFEE58"
-                inactiveDotColor="#90A4AE"
-                autoplay
-                circleLoop
-                resizeMethod={'resize'}
-                resizeMode={'cover'}
-                imageLoadingColor="#2196F3"
-            />
-            <ImageView
-                images={imagesViewInspection.filter(function(url){ return url != null})}
-                imageIndex={this.state.indexInspection}
-                visible={this.state.visibleInspection}
-                onRequestClose={()=>this.setState({visibleInspection:false})}
-            />
         </View>
 
 

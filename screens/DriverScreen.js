@@ -61,7 +61,9 @@ class DriverScreen extends Component {
       </Modal>
     )
   }
-  pickImageDriverPhoto = async () => {
+  
+
+  pickImage = async (action) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -69,167 +71,78 @@ class DriverScreen extends Component {
       quality: 1,
     });
     if (!result.cancelled) {
-      this.uploadImageDriverPhoto(result);
+      this.uploadImage(result,action)
     }
   }
-  pickImageIdentification = async () =>{
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+  alertStatus = (response,message) => {
+    if(response){
+      this.setState({modalVisible:true,message:message });
+      this.requestPostData();
+    }else{
+      this.setState({modalVisible:true,message:"Error Network" });
+    }
+  }
+  uploadImage = async (result,name) => {
+    const {route} = this.props; const {post_id} = route.params;
+    var base_url = '';
+    if(name==="driver_photo"){ 
+      var base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverPhoto";
+      this.setState({uploadLoadingDriverPhoto:true})
+    };
+    if(name==="indentification_photo"){ 
+      var base_url = "https://equipment.mohapiphup.com/api/uploadImageIdentification"; 
+      this.setState({uploadLoadingIdentification:true})
+    };
+    if(name==="driver_license_photo"){ 
+      var base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverLicense"; 
+      this.setState({uploadLoadingDriverLicense:true})
+    };
+    let uploadData = new FormData();
+    var old = '';
+    if(name==='driver_photo'){var old = this.state.driver_photo;}
+    if(name==='indentification_photo'){var old = this.state.indentification_photo;}
+    if(name==='driver_license_photo'){var old = this.state.driver_license_photo;}
+    uploadData.append('id',post_id)
+    uploadData.append(name,{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
+    uploadData.append(`${name}_old`, old)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+      this.alertStatus(response.status,response.message);
+      if(name==='driver_photo'){this.setState({uploadLoadingDriverPhoto:false})}
+      if(name==='indentification_photo'){this.setState({uploadLoadingIdentification:false})}
+      if(name==='driver_license_photo'){this.setState({uploadLoadingDriverLicense:false})}
     });
-    if (!result.cancelled) {
-      this.uploadImageIdentification(result);
-    }
   }
-  pickImageDriverLicense = async () =>{
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+  destroyImage = (name) => {
+    const {route} = this.props;
+    const {post_id} = route.params;
+    var base_url = '';
+    if(name==='driver_photo'){
+      var base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverPhoto";
+      this.setState({removeLoadingDriverPhoto:true});
+    }
+    if(name==='indentification_photo'){
+      var base_url = "https://equipment.mohapiphup.com/api/destroyImageIdentification";
+      this.setState({removeLoadingIdentification:true});
+    }
+    if(name==='driver_license_photo'){
+      var base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
+      this.setState({removeLoadingDriverLicense:true});
+    }
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+      this.alertStatus(response.status,response.message);
+      if(name==='driver_photo'){this.setState({removeLoadingDriverPhoto:false})};
+      if(name==='indentification_photo'){this.setState({removeLoadingIdentification:false})};
+      if(name==='driver_license_photo'){this.setState({removeLoadingDriverLicense:false})};
     });
-    if (!result.cancelled) {
-      this.uploadImageDriverLicense(result);
-    }
   }
 
-  uploadImageIdentification = async (result) => {
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/uploadImageIdentification";
-    let uploadData = new FormData();
-    this.setState({uploadLoadingIdentification:true})
-    uploadData.append('id',post_id)
-    uploadData.append('indentification_photo',{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
-    uploadData.append('indentification_photo_old', this.state.indentification_photo?this.state.indentification_photo:null)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message });
-          this.requestPostData();
-          this.setState({uploadLoadingIdentification:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({uploadLoadingIdentification:false});
-        }
-      });
-  }
-  destroyImageIdentification = () => {
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/destroyImageIdentification";
-    this.setState({removeLoadingIdentification:true});
-    let uploadData = new FormData();
-    uploadData.append('id',post_id)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message});
-          this.requestPostData();
-          this.setState({removeLoadingIdentification:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({removeLoadingIdentification:false});
-        }
-      });
-  }
-  
-  
 
-  
-  uploadImageDriverPhoto = async (result) =>{
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverPhoto";
-    let uploadData = new FormData();
-    this.setState({uploadLoadingDriverPhoto:true})
-    uploadData.append("image", { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'});
-    uploadData.append('id',post_id)
-    uploadData.append('driver_photo',{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
-    uploadData.append('driver_photo_old', this.state.driver_photo?this.state.driver_photo:null)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message });
-          this.requestPostData();
-          this.setState({uploadLoadingDriverPhoto:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({uploadLoadingDriverPhoto:false});
-        }
-      });
-  }
-  
-
-  destroyImageDriverPhoto = () => {
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverPhoto";
-    this.setState({removeLoadingDriverPhoto:true});
-    let uploadData = new FormData();
-    uploadData.append('id',post_id)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message});
-          this.requestPostData();
-          this.setState({removeLoadingDriverPhoto:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({removeLoadingDriverPhoto:false});
-        }
-      });
-  }
-
-  uploadImageDriverLicense = async (result) =>{
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverLicense";
-    let uploadData = new FormData();
-    this.setState({uploadLoadingDriverLicense:true})
-    uploadData.append('id',post_id)
-    uploadData.append('driver_license_photo', { uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
-    uploadData.append('driver_license_photo_old', this.state.driver_license_photo)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message });
-          this.requestPostData();
-          this.setState({uploadLoadingDriverLicense:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({uploadLoadingDriverLicense:false});
-        }
-      });
-  }
-  destroyImageDriverLicense = async () =>{
-    const {route} = this.props;
-    const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
-    this.setState({removeLoadingIdentification:true});
-    let uploadData = new FormData();
-    uploadData.append('id',post_id)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-        if(response.status){
-          this.setState({modalVisible:true,message:response.message});
-          this.requestPostData();
-          this.setState({removeLoadingIdentification:false});
-        }else{
-          this.setState({modalVisible:true,message:"Error Network" });
-          this.setState({removeLoadingIdentification:false});
-        }
-      });
-  }
-  
   requestPostData = async () => {
     const {route} = this.props;
     const {post_id} = route.params;
@@ -252,6 +165,41 @@ class DriverScreen extends Component {
     }).catch(error=>{
       console.log(error);
     })
+  }
+
+  removeLoading = () =>{
+    return(
+      <View style={styles.btnImage}>
+        <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+          <Text style={{marginBottom:5}}>Removing</Text>
+          <ActivityIndicator />
+        </View>
+      </View>
+    )
+  }
+  uploadLoading = () =>{
+    return(
+      <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+        <Text style={{marginBottom:5}}>Uploading</Text>
+        <ActivityIndicator />
+      </View>
+    )
+  }
+  blankBox =(name)=>{
+    return(
+      <View>
+        <Icon name="plus" type="font-awesome" color="#999" size={30} />
+        <Text style={{ color:"#999",marginTop:5 }}>{name}</Text>
+      </View>
+    )
+  }
+  btnAction = (action)=>{
+    return(
+    <>
+      <Button onPress={()=> this.destroyImage(action) } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+      <Button onPress={()=> console.warn(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+    </>
+    )
   }
   render() {
     const web = "https://equipment.mohapiphup.com/"
@@ -313,7 +261,6 @@ class DriverScreen extends Component {
                   </View>
                   }
                 </View>}
-
                 {this.state.tel_driver&&<View style={styles.list}>
                   {this.state.tel_driver_input ?
                   <Input
@@ -336,9 +283,11 @@ class DriverScreen extends Component {
                 {this.state.dob_driver&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>DOB:</Text> {this.state.dob_driver}</Text></View>}
                 {this.state.license_no_driver&& <View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>License No:</Text> {this.state.license_no_driver}</Text></View>}
                 {this.state.license_expiry_date&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Expire On:</Text> {this.state.license_expiry_date}</Text></View>}
+
+                
+
             </View>
-
-
+            <Button title="កែសំម្រួល" onPress={()=> this.props.navigation.navigate('EditScreen')} />
           
           <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
 
@@ -347,28 +296,12 @@ class DriverScreen extends Component {
               !this.state.removeLoadingDriverPhoto ?
               <View style={styles.btnImage}>
                 {this.state.driver_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
-                <Button onPress={()=> this.destroyImageDriverPhoto() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-                <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
-              </View>
-              :
-              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                <Text style={{marginBottom:5}}>Removing</Text>
-                <ActivityIndicator />
-              </View>
+                {this.btnAction('driver_photo')}
+              </View>:this.removeLoading()
             :
-            <TouchableOpacity onPress={ ()=> this.pickImageDriverPhoto()} disabled={this.state.uploadLoadingDriverPhoto}>
+            <TouchableOpacity onPress={ ()=> this.pickImage('driver_photo')} disabled={this.state.uploadLoadingDriverPhoto}>
               <View style={styles.btnImage}>
-              {this.state.uploadLoadingDriverPhoto ? 
-                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                  <Text style={{marginBottom:5}}>Uploading</Text>
-                  <ActivityIndicator />
-                </View>
-                :
-                <View>
-                  <Icon name="user-plus" type="font-awesome" color="#999" size={30} />
-                  <Text style={{ color:"#999",marginTop:5 }}>Driver</Text>
-                </View>
-              }
+              {this.state.uploadLoadingDriverPhoto ? this.uploadLoading() : this.blankBox(`Driver`)}
               </View>
             </TouchableOpacity>}
 
@@ -377,28 +310,12 @@ class DriverScreen extends Component {
               !this.state.removeLoadingIdentification ?
               <View style={styles.btnImage}>
                 {this.state.indentification_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />}
-                <Button onPress={()=> this.destroyImageIdentification() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-                <Button onPress={()=> console.warn('edit driver photo') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
-              </View>
-              :
-              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                <Text style={{marginBottom:5}}>Removing</Text>
-                <ActivityIndicator />
-              </View>
+                {this.btnAction('indentification_photo')}
+              </View>:this.removeLoading()
             :
-            <TouchableOpacity onPress={ ()=> this.pickImageIdentification()} disabled={this.state.uploadLoadingIdentification}>
+            <TouchableOpacity onPress={ ()=> this.pickImage('indentification_photo')} disabled={this.state.uploadLoadingIdentification}>
               <View style={styles.btnImage}>
-              {this.state.uploadLoadingIdentification ? 
-                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                  <Text style={{marginBottom:5}}>Uploading</Text>
-                  <ActivityIndicator />
-                </View>
-                :
-                <View>
-                  <Icon name="user-plus" type="font-awesome" color="#999" size={30} />
-                  <Text style={{ color:"#999",marginTop:5 }}>Identification</Text>
-                </View>
-              }
+               {this.state.uploadLoadingIdentification ?  this.uploadLoading() : this.blankBox(`Identification`)}
               </View>
             </TouchableOpacity>}
 
@@ -408,39 +325,16 @@ class DriverScreen extends Component {
               !this.state.removeLoadingDriverLicense ?
               <View style={styles.btnImage}>
                 {this.state.driver_license_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_license_photo}`}} />}
-                <Button onPress={()=> this.destroyImageDriverLicense() } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-                <Button onPress={()=> console.warn('edit driver license') } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
-              </View>
-              :
-              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                <Text style={{marginBottom:5}}>Removing</Text>
-                <ActivityIndicator />
-              </View>
-
+                {this.btnAction('driver_license_photo')}
+              </View>:this.removeLoading()
             :
-            <TouchableOpacity onPress={()=> this.pickImageDriverLicense()} disabled={this.state.uploadLoadingDriverLicense}>
+            <TouchableOpacity onPress={()=> this.pickImage('driver_license_photo')} disabled={this.state.uploadLoadingDriverLicense}>
               <View style={styles.btnImage}>
-              {this.state.uploadLoadingDriverLicense ? 
-                <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
-                  <Text style={{marginBottom:5}}>Uploading</Text>
-                  <ActivityIndicator />
-                </View>
-                :
-                <View>
-                  <Icon name="plus" type="font-awesome" color="#999" size={30} />
-                  <Text style={{ color:"#999",marginTop:5 }}>License</Text>
-                </View>
-              }
+              {this.state.uploadLoadingDriverLicense ? this.uploadLoading() : this.blankBox(`License`)}
               </View>
             </TouchableOpacity>
           }
-
-
           </View>
-          
-
-
-
           </View>
         </ScrollView>
         );
