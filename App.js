@@ -10,15 +10,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import HomeScreen from './screens/HomeScreen';
 import DetailScreen from './screens/DetailScreen';
+import EditScreen from './screens/EditScreen';
 
 enableScreens();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 
-function editScreen(){
-  return <View><Text>Edit Screen</Text></View>
-}
 
 function MyStack() {
   const navigation = useNavigation();
@@ -30,7 +28,7 @@ function MyStack() {
       options={{ 
         headerTitle:"Mohapiphup Admin",
         headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />) }} />
-      <Stack.Screen  name="EditScreen" component={editScreen} />
+      <Stack.Screen  name="EditScreen" component={EditScreen} />
     <Stack.Screen
       name="DetailScreen"
       component={DetailScreen}
