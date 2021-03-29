@@ -4,20 +4,13 @@ import { NavigationContainer,DrawerActions,useNavigation } from '@react-navigati
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { enableScreens } from 'react-native-screens';
 import { createNativeStackNavigator } from 'react-native-screens/native-stack';
-import { Button } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-
+import { Button,} from 'react-native-elements';
 import HomeScreen from './screens/HomeScreen';
 import DetailScreen from './screens/DetailScreen';
 import EditScreen from './screens/EditScreen';
-
 enableScreens();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
-
-
-
 function MyStack() {
   const navigation = useNavigation();
   return (

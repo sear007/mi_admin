@@ -8,7 +8,6 @@ import { Button,Input,Icon } from 'react-native-elements';
 import * as ImagePicker from 'expo-image-picker';
 import Moment from 'moment';
 import Modal from 'react-native-modal';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DatePicker from 'react-native-datepicker'
 class DriverScreen extends Component {
   constructor(props) {
@@ -16,8 +15,8 @@ class DriverScreen extends Component {
     this.state = {
         postLoading:true,
         driver_photo:'',
-        driver_name:'',
-        driver_name_input:false,
+        name_driver:'',
+        name_driver_input:false,
         tel_driver:'',
         tel_driver_input:false,
         position_driver:'',
@@ -49,13 +48,16 @@ class DriverScreen extends Component {
         message: "",
         refreshing:false,
 
-        editAction:false
+        editAction:false,
+        updateDriverInformationLoading: false,
+        categories: [],
 
     };
   }
   componentDidMount(){
     this.requestPostData();
   }
+
   onRefresh = () => { this.requestPostData().then(()=>this.setState({refreshing:false})); }
   modal = () => {
     return(
@@ -148,6 +150,28 @@ class DriverScreen extends Component {
     });
   }
 
+  updateDriverInformation = async () =>{
+    const {route} = this.props;
+    const {post_id} = route.params;
+    let base_url = "https://equipment.mohapiphup.com/api/updateDriverInformation";
+    this.setState({updateDriverInformationLoading:true});
+    let uploadData = new FormData();
+    uploadData.append('id',post_id)
+    uploadData.append('name_driver',this.state.name_driver?this.state.name_driver:Object.create(null))
+    uploadData.append('position_driver',this.state.position_driver?this.state.position_driver:Object.create(null))
+    uploadData.append('dob_driver',this.state.dob_driver?this.state.dob_driver:Object.create(null))
+    uploadData.append('tel_driver',this.state.tel_driver?this.state.tel_driver:Object.create(null))
+    uploadData.append('license_no_driver',this.state.license_no_driver?this.state.license_no_driver:Object.create(null))
+    uploadData.append('license_issued_date',this.state.license_issued_date?this.state.license_issued_date:Object.create(null))
+    uploadData.append('license_expiry_date',this.state.license_expiry_date?this.state.license_expiry_date:Object.create(null))
+    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
+    .then(response=>response.json())
+    .then(response => {
+      this.alertStatus(response.status,response.message);
+      this.setState({updateDriverInformationLoading:false});
+      this.requestPostData();
+    });
+  }
 
   requestPostData = async () => {
     const {route} = this.props;
@@ -157,7 +181,7 @@ class DriverScreen extends Component {
     .then((responseJson)=>{
       this.setState({
         postLoading:false,
-        driver_name: responseJson.operator.name_driver?responseJson.operator.name_driver:null,
+        name_driver: responseJson.operator.name_driver?responseJson.operator.name_driver:null,
         tel_driver:responseJson.operator.tel_driver?responseJson.operator.tel_driver:null,
         position_driver:responseJson.operator.position_driver?responseJson.operator.position_driver:null,
         dob_driver:responseJson.operator.dob_driver?responseJson.operator.dob_driver:null,
@@ -218,16 +242,18 @@ class DriverScreen extends Component {
     )
   }
   Input=(label,name,value)=>{
-    
+    var input = <TextInput style={styles.input} placeholder={label} value={value} />;
+    if( name === 'name_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({name_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'position_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({position_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'dob_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({dob_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'tel_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({tel_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'license_no_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_no_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'license_issued_date' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_issued_date:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'license_expiry_date' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_expiry_date:value})} style={styles.input} placeholder={label} value={value} /> }
     return(
       <View>
         <Text>{label}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={label}
-          value={value}
-          onFocus={ () => this.setState({pickDateDOB:true}) }
-        />
+        {input}
       </View>
     )
   }
@@ -238,12 +264,19 @@ class DriverScreen extends Component {
             <DatePicker
               style={{width: "100%" }}
               customStyles={{ dateInput:{borderColor:"#888",height: 40,marginBottom:10, alignItems:"flex-start",padding:10  },dateText:{textAlign:'left',fontSize:17,color:"#000"}}}
-              date={value && new Date(Moment(value.split('/').join('-')).format('Y-MM-DD'))}
+              date={value?new Date(Moment(value.split('/').join('-')).format('Y-MM-DD')):``}
               showIcon={false}
               mode="date" placeholder="Date Of Birth" format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
               onDateChange={(date) => { 
                 if(name==='dob_driver'){ this.setState({dob_driver:date}) }
+                if(name==='license_issued_date'){ this.setState({license_issued_date:date}) }
                 if(name==='license_expiry_date'){ this.setState({license_expiry_date:date}) }
+              }}
+              cancelBtnText="Clear"
+              onClear={()=>{
+                if(name==='dob_driver'){ this.setState({dob_driver:null}) }
+                if(name==='license_issued_date'){ this.setState({license_issued_date:null}) }
+                if(name==='license_expiry_date'){ this.setState({license_expiry_date:null}) }
               }}
             />
         </View>
@@ -283,27 +316,34 @@ class DriverScreen extends Component {
             <View style={styles.container}>
                 {this.state.editAction ? 
                 <>
-                  {this.Input('Name','',this.state.driver_name)}
-                  {this.Input('Phone','',this.state.tel_driver)}
-                  {this.Input('Positon','',this.state.position_driver)}
-                  {this.DatePicker('DOB','dob_driver',this.state.dob_driver)}
-                  {this.Input('License No','',this.state.license_no_driver)}
-                  {this.DatePicker('Expire On','license_expiry_date',this.state.license_expiry_date)}
+                  {this.Input('Name','name_driver',this.state.name_driver)}
+                  {this.Input('Phone','tel_driver',this.state.tel_driver)}
+                  {this.Input('Positon','position_driver',this.state.position_driver)}
+                  {this.DatePicker('DOB','dob_driver',this.state.dob_driver?this.state.dob_driver:``)}
+                  {this.Input('License No','license_no_driver',this.state.license_no_driver)}
+                  {this.DatePicker('Issued On','license_issued_date',this.state.license_issued_date?this.state.license_issued_date:``)}
+                  {this.DatePicker('Expire On','license_expiry_date',this.state.license_expiry_date?this.state.license_expiry_date:``)}
                 </>
                 :
                 <>
-                {this.List('Name',this.state.driver_name)}
+                {this.List('Name',this.state.name_driver)}
                 {this.List('Phone',this.state.tel_driver)}
                 {this.List('Positon',this.state.position_driver)}
                 {this.List('DOB',this.state.dob_driver)}
                 {this.List('License No',this.state.license_no_driver)}
+                {this.List('Issued On',this.state.license_issued_date)}
                 {this.List('Expire On',this.state.license_expiry_date)}
                 </>
                 }
             </View>
-            <Button onPress={ ()=> this.state.editAction ? this.setState({ editAction:false }): this.setState({ editAction:true }) } 
+            <Button 
+              onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateDriverInformation()): this.setState({ editAction:true })} 
               title={this.state.editAction ? "Update":"Edit"} 
-              containerStyle={{ marginHorizontal:40,marginVertical:20 }} 
+              containerStyle={{ marginHorizontal:40,marginVertical:20}}
+              loading={this.state.updateDriverInformationLoading}
+              icon={
+                <Icon type="font-awsome" name={this.state.editAction?"check":"edit"} color="#fff" style={{ marginRight:10 }} size={20} />
+              }
             />
           
           <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
@@ -311,7 +351,7 @@ class DriverScreen extends Component {
               {this.state.driver_photo ?
                 !this.state.removeLoadingDriverPhoto ?
                 <View style={styles.btnImage}>
-                  {this.state.driver_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
+                  {this.state.driver_photo && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
                   {this.btnAction('driver_photo')}
                 </View>:this.removeLoading()
               :
