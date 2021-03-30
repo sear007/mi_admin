@@ -98,19 +98,9 @@ class DriverScreen extends Component {
       var base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverPhoto";
       this.setState({uploadLoadingDriverPhoto:true})
     };
-    if(name==="indentification_photo"){ 
-      var base_url = "https://equipment.mohapiphup.com/api/uploadImageIdentification"; 
-      this.setState({uploadLoadingIdentification:true})
-    };
-    if(name==="driver_license_photo"){ 
-      var base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverLicense"; 
-      this.setState({uploadLoadingDriverLicense:true})
-    };
     let uploadData = new FormData();
     var old = '';
     if(name==='driver_photo'){var old = this.state.driver_photo;}
-    if(name==='indentification_photo'){var old = this.state.indentification_photo;}
-    if(name==='driver_license_photo'){var old = this.state.driver_license_photo;}
     uploadData.append('id',post_id)
     uploadData.append(name,{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
     uploadData.append(`${name}_old`, old)
@@ -119,8 +109,6 @@ class DriverScreen extends Component {
     .then(response => {
       this.alertStatus(response.status,response.message);
       if(name==='driver_photo'){this.setState({uploadLoadingDriverPhoto:false})}
-      if(name==='indentification_photo'){this.setState({uploadLoadingIdentification:false})}
-      if(name==='driver_license_photo'){this.setState({uploadLoadingDriverLicense:false})}
     });
   }
   destroyImage = (name) => {
@@ -131,14 +119,6 @@ class DriverScreen extends Component {
       var base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverPhoto";
       this.setState({removeLoadingDriverPhoto:true});
     }
-    if(name==='indentification_photo'){
-      var base_url = "https://equipment.mohapiphup.com/api/destroyImageIdentification";
-      this.setState({removeLoadingIdentification:true});
-    }
-    if(name==='driver_license_photo'){
-      var base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverLicense";
-      this.setState({removeLoadingDriverLicense:true});
-    }
     let uploadData = new FormData();
     uploadData.append('id',post_id)
     fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
@@ -146,29 +126,21 @@ class DriverScreen extends Component {
     .then(response => {
       this.alertStatus(response.status,response.message);
       if(name==='driver_photo'){this.setState({removeLoadingDriverPhoto:false})};
-      if(name==='indentification_photo'){this.setState({removeLoadingIdentification:false})};
-      if(name==='driver_license_photo'){this.setState({removeLoadingDriverLicense:false})};
     });
   }
 
-  updateDriverInformation = async () =>{
+  updateInsuranceInformation = async () =>{
     const {route} = this.props;
     const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/updateDriver";
-    this.setState({updateDriverInformationLoading:true});
+    let base_url = "https://equipment.mohapiphup.com/api/updateInsurance";
+    this.setState({updateInsuranceInformationLoading:true});
     await axios.post(base_url, {
       id: post_id,
       name_driver: this.state.name_driver&&this.state.name_driver,
-      position_driver: this.state.position_driver&&this.state.position_driver,
-      dob_driver: this.state.dob_driver&&this.state.dob_driver,
-      tel_driver: this.state.tel_driver&&this.state.tel_driver,
-      license_no_driver: this.state.license_no_driver&&this.state.license_no_driver,
-      license_issued_date: this.state.license_issued_date&&this.state.license_issued_date,
-      license_expiry_date: this.state.license_expiry_date&&this.state.license_expiry_date,
     })
     .then((response) => {
       this.alertStatus(response.data.status,response.data.message);
-      this.setState({updateDriverInformationLoading:false});
+      this.setState({updateInsuranceInformationLoading:false});
       this.requestPostData();
     }, (error) => {
       console.log(error);
@@ -184,15 +156,6 @@ class DriverScreen extends Component {
       this.setState({
         postLoading:false,
         name_driver: responseJson.operator.name_driver?responseJson.operator.name_driver:null,
-        tel_driver:responseJson.operator.tel_driver?responseJson.operator.tel_driver:null,
-        position_driver:responseJson.operator.position_driver?responseJson.operator.position_driver:null,
-        dob_driver:responseJson.operator.dob_driver?responseJson.operator.dob_driver:null,
-        license_no_driver:responseJson.operator.license_no_driver?responseJson.operator.license_no_driver:null,
-        license_issued_date:responseJson.operator.license_issued_date?responseJson.operator.license_issued_date:null,
-        license_expiry_date:responseJson.operator.license_expiry_date?responseJson.operator.license_expiry_date:null,
-        driver_photo:responseJson.operator.driver_photo?responseJson.operator.driver_photo:null,
-        indentification_photo:responseJson.operator.indentification_photo?responseJson.operator.indentification_photo:null,
-        driver_license_photo:responseJson.operator.driver_license_photo?responseJson.operator.driver_license_photo:null,
       });
     }).catch(error=>{
       console.log(error);
@@ -246,12 +209,6 @@ class DriverScreen extends Component {
   Input=(label,name,value)=>{
     var input = <TextInput style={styles.input} placeholder={label} value={value} />;
     if( name === 'name_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({name_driver:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'position_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({position_driver:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'dob_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({dob_driver:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'tel_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({tel_driver:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'license_no_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_no_driver:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'license_issued_date' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_issued_date:value})} style={styles.input} placeholder={label} value={value} /> }
-    if( name === 'license_expiry_date' ){ var input = <TextInput onChangeText={ (value) => this.setState({license_expiry_date:value})} style={styles.input} placeholder={label} value={value} /> }
     return(
       <View>
         <Text>{label}</Text>
@@ -271,14 +228,10 @@ class DriverScreen extends Component {
               mode="date" placeholder="Date Of Birth" format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
               onDateChange={(date) => { 
                 if(name==='dob_driver'){ this.setState({dob_driver:date}) }
-                if(name==='license_issued_date'){ this.setState({license_issued_date:date}) }
-                if(name==='license_expiry_date'){ this.setState({license_expiry_date:date}) }
               }}
               cancelBtnText="Clear"
               onClear={()=>{
                 if(name==='dob_driver'){ this.setState({dob_driver:null}) }
-                if(name==='license_issued_date'){ this.setState({license_issued_date:null}) }
-                if(name==='license_expiry_date'){ this.setState({license_expiry_date:null}) }
               }}
             />
         </View>
@@ -288,13 +241,9 @@ class DriverScreen extends Component {
     const web = "https://equipment.mohapiphup.com/"
     const images = [
         this.state.driver_photo && web+this.state.driver_photo,
-        this.state.indentification_photo && web+this.state.indentification_photo,
-        this.state.driver_license_photo && web+this.state.driver_license_photo,
     ];
     const imagesView = [
         this.state.driver_photo && { uri: web+this.state.driver_photo},
-        this.state.indentification_photo && { uri: web+this.state.indentification_photo},
-        this.state.driver_license_photo && { uri: web+this.state.driver_license_photo},
     ];
     if (this.state.postLoading) {
         return(
@@ -319,27 +268,15 @@ class DriverScreen extends Component {
                 {this.state.editAction ? 
                 <>
                   {this.Input('Name','name_driver',this.state.name_driver)}
-                  {this.Input('Phone','tel_driver',this.state.tel_driver)}
-                  {this.Input('Positon','position_driver',this.state.position_driver)}
-                  {this.DatePicker('DOB','dob_driver',this.state.dob_driver?this.state.dob_driver:``)}
-                  {this.Input('License No','license_no_driver',this.state.license_no_driver)}
-                  {this.DatePicker('Issued On','license_issued_date',this.state.license_issued_date?this.state.license_issued_date:``)}
-                  {this.DatePicker('Expire On','license_expiry_date',this.state.license_expiry_date?this.state.license_expiry_date:``)}
                 </>
                 :
                 <>
                 {this.List('Name',this.state.name_driver)}
-                {this.List('Phone',this.state.tel_driver)}
-                {this.List('Positon',this.state.position_driver)}
-                {this.List('DOB',this.state.dob_driver)}
-                {this.List('License No',this.state.license_no_driver)}
-                {this.List('Issued On',this.state.license_issued_date)}
-                {this.List('Expire On',this.state.license_expiry_date)}
                 </>
                 }
             </View>
             <Button 
-              onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateDriverInformation()): this.setState({ editAction:true })} 
+              onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateInsuranceInformation()): this.setState({ editAction:true })} 
               title={this.state.editAction ? "Update":"Edit"} 
               containerStyle={{ marginHorizontal:40,marginVertical:20}}
               loading={this.state.updateDriverInformationLoading}
@@ -362,35 +299,6 @@ class DriverScreen extends Component {
                 {this.state.uploadLoadingDriverPhoto ? this.uploadLoading() : this.blankBox(`Driver`)}
                 </View>
               </TouchableOpacity>}
-
-            {/* Identification */}
-            {this.state.indentification_photo ?
-                !this.state.removeLoadingIdentification ?
-                <View style={styles.btnImage}>
-                  {this.state.indentification_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />}
-                  {this.btnAction('indentification_photo')}
-                </View>:this.removeLoading()
-              :
-              <TouchableOpacity onPress={ ()=> this.pickImage('indentification_photo')} disabled={this.state.uploadLoadingIdentification}>
-                <View style={styles.btnImage}>
-                {this.state.uploadLoadingIdentification ?  this.uploadLoading() : this.blankBox(`Identification`)}
-                </View>
-              </TouchableOpacity>}
-            {/* Driver License */}
-            {
-              this.state.driver_license_photo ?
-                !this.state.removeLoadingDriverLicense ?
-                <View style={styles.btnImage}>
-                  {this.state.driver_license_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_license_photo}`}} />}
-                  {this.btnAction('driver_license_photo')}
-                </View>:this.removeLoading()
-              :
-              <TouchableOpacity onPress={()=> this.pickImage('driver_license_photo')} disabled={this.state.uploadLoadingDriverLicense}>
-                <View style={styles.btnImage}>
-                {this.state.uploadLoadingDriverLicense ? this.uploadLoading() : this.blankBox(`License`)}
-                </View>
-              </TouchableOpacity>
-            }
             </View>
             </View>
             </KeyboardAvoidingView>

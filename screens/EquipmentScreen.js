@@ -10,6 +10,7 @@ import Moment from 'moment';
 import Modal from 'react-native-modal';
 import DatePicker from 'react-native-datepicker'
 import RNPickerSelect from 'react-native-picker-select';
+import axios from "axios";
 class EquipmentScreen extends Component {
   constructor(props) {
     super(props);
@@ -19,9 +20,20 @@ class EquipmentScreen extends Component {
         old_equipment_id:'',
         category:'',
         category_id:'',
+
+        
         plate:'',
+
+        
         marker	:'',
+        brands:[],
+        brand_id:'',
+
         model	:'',
+        sub_categories:[],
+        sub_category_id:'',
+
+        
         insurance	:'',
         policy	:'',
         photos: [],
@@ -59,6 +71,7 @@ class EquipmentScreen extends Component {
   componentDidMount(){
     this.requestPostData();
     this.requestCategory();
+    this.requestBrands();
   }
   requestCategory = async () =>{
     await fetch('https://equipment.mohapiphup.com/api/categories_app')
@@ -66,6 +79,17 @@ class EquipmentScreen extends Component {
     .then((responseJson)=>{
       this.setState({
         categories: responseJson,
+      });
+    }).catch(error=>{
+      console.log(error);
+    })
+  }
+  requestBrands = async () =>{
+    await fetch('https://equipment.mohapiphup.com/api/brands')
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      this.setState({
+        brands: responseJson,
       });
     }).catch(error=>{
       console.log(error);
@@ -79,7 +103,6 @@ class EquipmentScreen extends Component {
           <View><Text>{this.state.message}</Text></View>
           <View style={{justifyContent:"space-between"}}>
             <Button icon={<Icon type="font-awesome" color="#555" size={18} name="close" />} type="clear" containerStyle={styles.modalCloseBtn} onPress={() => this.setState({modalVisible:false})} />
-              
           </View>
         </View>
       </Modal>
@@ -96,6 +119,14 @@ class EquipmentScreen extends Component {
     });
     if (!result.cancelled) {
       this.uploadImage(result);
+    }
+  }
+  alertStatus = (response,message) => {
+    if(response){
+      this.setState({modalVisible:true,message:message });
+      this.requestPostData();
+    }else{
+      this.setState({modalVisible:true,message:"Error Network" });
     }
   }
 
@@ -159,19 +190,28 @@ class EquipmentScreen extends Component {
   onRefresh = () => { this.requestPostData().then(()=>this.setState({refreshing:false})); }
 
 
-  updateEquipmentInformation = async () =>{
+  updateEquipment = async () =>{
     const {route} = this.props;
     const {post_id} = route.params;
-    let base_url = "https://equipment.mohapiphup.com/api/updateEquipmentInformation";
+    let base_url = "https://equipment.mohapiphup.com/api/updateEquipment";
     this.setState({updateEquipmentformationLoading:true});
-    let uploadData = new FormData();
-    uploadData.append('id',post_id)
-    fetch(base_url,{method:"POST",body:uploadData,headers:{Accept: "application/json","Content-Type": "multipart/form-data"},})
-    .then(response=>response.json())
-    .then(response => {
-      this.alertStatus(response.status,response.message);
-      this.setState({updateEquipmentInformationLoading:false});
+    await axios.post(base_url, {
+      id: post_id,
+      equipment_id: this.state.equipment_id&&this.state.equipment_id,
+      plate: this.state.plate&&this.state.plate,
+      category_id: this.state.category_id&&this.state.category_id,
+      brand_id: this.state.category_id&&this.state.brand_id,
+      sub_category_id: this.state.sub_category_id&&this.state.sub_category_id,
+      payment: this.state.payment&&this.state.payment,
+      year: this.state.year&&this.state.year,
+      engine: this.state.engine&&this.state.engine,
+    })
+    .then((response) => {
+      this.alertStatus(response.data.status,response.data.message);
+      this.setState({updateDriverInformationLoading:false});
       this.requestPostData();
+    }, (error) => {
+      console.log(error);
     });
   }
 
@@ -189,10 +229,16 @@ class EquipmentScreen extends Component {
         category      :responseJson.category.name_en,
         category_id   :responseJson.category_id,
         plate         :responseJson.plate_number,
-        marker	      :responseJson.sub_category&&responseJson.sub_category.name,
-        model	        :responseJson.category &&responseJson.category.name_en,
-        insurance	    :responseJson.insurance.period_of_cover_to,
-        policy	      :responseJson.insurance.policy_no,
+
+        marker	      :responseJson.brand&&responseJson.brand.name,
+        brand_id      :responseJson.brand_id,
+
+        
+
+        model	        :responseJson.sub_category && responseJson.sub_category.name,
+        sub_category_id   :responseJson.sub_category_id,
+
+
         photos        : responseJson.photos,
         payment        : responseJson.payment,
         year        : responseJson.year,
@@ -202,8 +248,6 @@ class EquipmentScreen extends Component {
       console.log(error);
     })
   }
-
-
   List=(name,value)=>{
     return(
       <View style={styles.list}>
@@ -215,7 +259,7 @@ class EquipmentScreen extends Component {
   }
   Input=(label,name,value)=>{
     var input = <TextInput style={styles.input} placeholder={label} value={value} />;
-    if( name === 'equipment_id' ){ var input = <TextInput onChangeText={ (value) => this.setState({equipment_id:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'equipment_id' ){ var input = <TextInput editable={false} onChangeText={ (value) => this.setState({equipment_id:value})} style={styles.input} placeholder={label} value={value} /> }
     if( name === 'category' ){ var input = <TextInput onChangeText={ (value) => this.setState({category:value})} style={styles.input} placeholder={label} value={value} /> }
     if( name === 'plate' ){ var input = <TextInput onChangeText={ (value) => this.setState({plate:value})} style={styles.input} placeholder={label} value={value} /> }
     if( name === 'marker' ){ var input = <TextInput onChangeText={ (value) => this.setState({marker:value})} style={styles.input} placeholder={label} value={value} /> }
@@ -234,6 +278,7 @@ class EquipmentScreen extends Component {
   DatePicker=(label,name,value)=>{
       return(
         <View>
+          
           <Text style={{ marginBottom:5 }}>{label}</Text>
             <DatePicker
               style={{width: "100%" }}
@@ -251,13 +296,63 @@ class EquipmentScreen extends Component {
       )
   }
   PickerSelect = (label,name,value) => {
-    return(
-      <RNPickerSelect placeholder={{label: label,value: value}}
-        onValueChange={(value) =>  this.setState({category_id:value}) }
+    var Picker =
+    <>
+    <Text>{label}</Text>
+    <RNPickerSelect placeholder={{label: `Choose Categories`,value: null}}
+    onValueChange={(value) =>  this.setState({category_id:value}) }
+    items={(this.state.categories.map(item=>({ label: item.name_en, value: item.id })))}
+    style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
+    />
+    </>;
+    if(name==='category_id'){
+      var Picker = 
+      <>
+      <Text>Category</Text>
+      <RNPickerSelect placeholder={{label: this.state.category,value:this.state.category_id}}
         items={(this.state.categories.map(item=>({ label: item.name_en, value: item.id })))}
-        style={{placeholder: {color: '#000',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17}}}
+        style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
+        onValueChange={(value) =>  this.setState({category_id:value},()=>console.warn(this.state.category_id)) }
       />
-    )
+      </>
+    }
+    if(name==='brand_id'){
+      var Picker = 
+      <>
+      <Text>Marker</Text>
+      <RNPickerSelect disabled={this.state.brands.length > 0 ? false:true} placeholder={{label:`Choose Brand`,value: null}}
+        items={(this.state.brands.map(item=>({ label: item.name, value: item.id })))}
+        style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
+        onValueChange={(value) =>this.setState({brand_id:value},()=>console.warn(this.state.brand_id))}
+      />
+    </>
+    }
+    if(name==='sub_category_id'){
+      var Picker = 
+      <>
+      <Text>Model</Text>
+      <RNPickerSelect disabled={this.state.sub_categories.length > 0 ? false:true} placeholder={{label: `Choose Model`,value: null}}
+      items={(this.state.sub_categories.map(item=>({ label: item.name, value: item.id })))}
+      style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
+      onValueChange={(value) =>  this.setState({sub_category_id:value})}
+      />
+      </>
+    }
+    if(name==='payment'){
+      var Picker = 
+      <>
+      <Text>Payment</Text>
+      <RNPickerSelect placeholder={{label:this.state.payment,value: this.state.payment}}
+      items={[
+        { label: 'Monthly', value: 'monthly' },
+        { label: 'm3', value: 'm3' }
+      ]}
+      style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
+      onValueChange={(value) =>  this.setState({payment:value}) }
+      />
+      </>
+    }
+    return Picker;
   }
   render() {
     const web = "https://equipment.mohapiphup.com/"
@@ -284,11 +379,9 @@ class EquipmentScreen extends Component {
             onRefresh={this.onRefresh}
           />
         }>
-
+        <KeyboardAvoidingView>
         <View>
-            {this.PickerSelect(this.state.category,'category',this.state.category_id)}
-
-            {this.modal()}
+          {this.modal()}
             <SliderBox
                 sliderBoxHeight={300}
                 images={images.filter(function(url){ return url != null })}
@@ -312,34 +405,30 @@ class EquipmentScreen extends Component {
                 {this.state.editAction ? 
                 <>
                   {this.Input('ID','equipment_id',this.state.equipment_id)}
-                  {this.Input('Category','category',this.state.category)}
                   {this.Input('Plate','plate',this.state.plate)}
-                  {this.Input('Marker','marker',this.state.marker)}
-                  {this.Input('Model','model',this.state.model)}
-                  {this.Input('Payment','payment',this.state.payment)}
+                  {this.PickerSelect(this.state.category,'category_id',this.state.category_id)}
+                  {this.PickerSelect(this.state.marker&&this.state.marker,'brand_id',this.state.brand_id&&this.state.brand_id)}
+                  {this.PickerSelect(this.state.model,'sub_category_id',this.state.sub_category_id)}
+                  {this.PickerSelect(this.state.payment,'payment',this.state.payment)}
                   {this.Input('Year','year',this.state.year)}
                   {this.Input('Engine','engine',this.state.engine)}
-                  {this.DatePicker('Insurance','insurance',this.state.insurance)}
-                  {this.Input('Policy','policy',this.state.policy)}
                 </>
                 :
                 <>
                 {this.List('ID',this.state.equipment_id)}
-                {this.List('Category',this.state.category)}
                 {this.List('Plate',this.state.plate)}
+                {this.List('Category',this.state.category)}
                 {this.List('Marker',this.state.marker)}
                 {this.List('Model',this.state.model)}
                 {this.List('Payment',this.state.payment)}
                 {this.List('Year',this.state.year)}
                 {this.List('Engine',this.state.engine)}
-                {this.List('Insurance',this.state.insurance)}
-                {this.List('Policy',this.state.policy)}
                 </>
                 }
             </View>
 
             <Button 
-              onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateEquipmentInformation()): this.setState({ editAction:true })} 
+              onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateEquipment()): this.setState({ editAction:true })} 
               title={this.state.editAction ? "Update":"Edit"} 
               containerStyle={{ marginHorizontal:40,marginVertical:20}}
               loading={this.state.updateDriverInformationLoading}
@@ -348,25 +437,7 @@ class EquipmentScreen extends Component {
               }
             />
 
-          {/* <View style={styles.container}>  
-              {this.state.equipment_id&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>ID:</Text>{this.state.old_equipment_id}</Text></View>}
-              {this.state.equipment_id&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}></Text>{this.state.equipment_id} </Text></View>}
-              {this.state.category&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Category:</Text> {this.state.category}</Text></View>}
-              {this.state.plate&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Plate:</Text> {this.state.plate}</Text></View>}
-              {this.state.marker&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Marker:</Text> {this.state.marker}</Text></View>}
-              {this.state.model&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Model:</Text> {this.state.model}</Text></View>}
-              {this.state.payment&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Payment:</Text> {this.state.payment}</Text></View>}
-              {this.state.year&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Year:</Text> {this.state.year}</Text></View>}
-              {this.state.engine&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Engine:</Text> {this.state.engine}</Text></View>}
-              {this.state.insurance&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Insurance:</Text> {this.state.insurance}</Text></View>}
-              {this.state.policy&&<View style={styles.list}><Text style={styles.Text}><Text style={styles.TextMute}>Policy:</Text> {this.state.policy}</Text></View>}
-          </View> */}
-
         </View>
-
-
-        
-
           {this.state.removeLoading && 
           <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
             <Text style={{marginBottom:5}}>Please wait! Image is removing</Text>
@@ -397,6 +468,7 @@ class EquipmentScreen extends Component {
             </View>
           </TouchableOpacity>
         </View>
+        </KeyboardAvoidingView>
         </ScrollView>
 
         );
