@@ -115,4 +115,88 @@ module.exports = StyleSheet.create({
         padding: 10,
         fontSize:17,
         },
+      headerWrapper: {
+          justifyContent:"space-between",
+          flexDirection:"row",
+      },
+      closeButton: {
+          marginRight: 8,
+          marginTop: 8,
+          width: 45,
+          height: 45,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 22.5,
+          backgroundColor: "#00000077",
+      },
+      closeText: {
+          lineHeight: 25,
+          fontSize: 25,
+          paddingTop: 2,
+          textAlign: "center",
+          color: "#FFF",
+          includeFontPadding: false,
+      },
+      countBoxWrapper:{
+        flexDirection:'row', 
+        flexWrap:'wrap', 
+        justifyContent:'space-between',
+      },
+      countBox:{
+        position:"relative",
+        width: Dimensions.get('window').width/2-16,
+        backgroundColor:"#ede37e",
+        padding: 10,
+        marginBottom:10,
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 1,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+        
+        elevation: 5,
+      },
+      badgeCountBox:{
+        position:"absolute",
+        right:-5,
+        top:0,
+        padding: 10,
+        
+      },
+      white:{
+        color:"#fff"
+      },
+      btnAppWrapper:{
+        height:130,
+        marginBottom:10,
+      },
+      btnInner:{
+        alignItems:"center",
+        justifyContent:"center",
+      },
+    
+      btnApp:{
+        width: 60,
+        height: 60,
+        borderRadius:60,
+        marginBottom:10,
+        marginRight:10,
+        backgroundColor: "#d6cbf6",
+        alignItems:"center",
+        justifyContent:"center",
+        borderWidth:2,
+        borderColor:"#5435ac"
+      },
+      icon:{
+        fontSize:30,
+        color:"#8b6ae7",
+      },
+      textApp:{
+        marginRight:10,
+        fontSize:14,
+        color:"#444",
+        fontWeight: "bold",
+      }
 });

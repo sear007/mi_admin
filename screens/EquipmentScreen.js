@@ -354,6 +354,7 @@ class EquipmentScreen extends Component {
     }
     return Picker;
   }
+  ImageFooter=(current_index,total_images)=>{ return(<View style={{ alignItems:"center",padding: 20, }}><Text style={{ color:"white" }}>{current_index+1}/{total_images}</Text></View>)}
   render() {
     const web = "https://equipment.mohapiphup.com/"
     const images = (
@@ -395,6 +396,7 @@ class EquipmentScreen extends Component {
                 imageLoadingColor="#2196F3"
             />
             <ImageView
+                FooterComponent={({ imageIndex })=> this.ImageFooter(imageIndex,images.filter(function(url){ return url != null}).length) }
                 images={imagesView.filter(function(url){ return url != null})}
                 imageIndex={this.state.index}
                 visible={this.state.visible}

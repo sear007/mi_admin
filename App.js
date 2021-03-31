@@ -8,6 +8,8 @@ import { Button,} from 'react-native-elements';
 import HomeScreen from './screens/HomeScreen';
 import DetailScreen from './screens/DetailScreen';
 import EditScreen from './screens/EditScreen';
+import ExpiredInsurance from './screens/ExpiredInsurance';
+import CategoryScreen from './screens/CategoryScreen';
 enableScreens();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -25,6 +27,19 @@ function MyStack() {
     <Stack.Screen
       name="DetailScreen"
       component={DetailScreen}
+      options={{
+        headerBackTitleVisible:false
+      }}/>
+      <Stack.Screen
+      name="ExpiredInsurance"
+      component={ExpiredInsurance}
+      options={{
+        title: 'Veicles Insurance Expired',
+        headerBackTitleVisible:false
+      }}/>
+      <Stack.Screen
+      name="CategoryScreen"
+      component={CategoryScreen}
       options={{
         headerBackTitleVisible:false
       }}/>

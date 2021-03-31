@@ -214,13 +214,13 @@ class InspectionScreen extends Component {
     return(
     <>
       <Button onPress={()=> this.destroyImage(action) } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-      <Button onPress={()=> console.warn(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+      <Button onPress={()=> this.pickImage(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
     </>
     )
   }
   
    
-
+  ImageFooter=(current_index,total_images)=>{ return(<View style={{ alignItems:"center",padding: 20, }}><Text style={{ color:"white" }}>{current_index+1}/{total_images}</Text></View>)}
   render() {
     const web = "https://equipment.mohapiphup.com/"
     const imagesInspection = [
@@ -267,6 +267,7 @@ class InspectionScreen extends Component {
                 imageLoadingColor="#2196F3"
             />
             <ImageView
+                FooterComponent={({ imageIndex })=> this.ImageFooter(imageIndex,imagesInspection.filter(function(url){ return url != null}).length) }
                 images={imagesViewInspection.filter(function(url){ return url != null})}
                 imageIndex={this.state.indexInspection}
                 visible={this.state.visibleInspection}
@@ -281,7 +282,11 @@ class InspectionScreen extends Component {
             {this.state.inspection_certificate ?
                 !this.state.removeLoadingInspection ?
                 <View style={styles.btnImage}>
-                  {this.state.inspection_certificate && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.inspection_certificate}`}} />}
+                  {this.state.inspection_certificate && 
+                    !this.state.uploadLoadingInspection ?
+                    <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.inspection_certificate}`}} />
+                    : this.uploadLoading()
+                  }
                   {this.btnAction('inspection_certificate')}
                 </View>:this.removeLoading()
               :
@@ -292,7 +297,11 @@ class InspectionScreen extends Component {
               {this.state.inspection_certificate_2 ?
                 !this.state.removeLoadingInspection2 ?
                 <View style={styles.btnImage}>
-                  {this.state.inspection_certificate_2 && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.inspection_certificate_2}`}} />}
+                  {this.state.inspection_certificate_2 && 
+                  !this.state.uploadLoadingInspection2?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.inspection_certificate_2}`}} />
+                  :this.uploadLoading() 
+                  }
                   {this.btnAction('inspection_certificate_2')}
                 </View>:this.removeLoading()
               :
@@ -305,7 +314,11 @@ class InspectionScreen extends Component {
             {this.state.road_tax_sticker ?
                 !this.state.removeLoadingSticker ?
                 <View style={styles.btnImage}>
-                  {this.state.road_tax_sticker && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax_sticker}`}} />}
+                  {this.state.road_tax_sticker && 
+                  !this.state.uploadLoadingSticker?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax_sticker}`}} />
+                  :this.uploadLoading() 
+                  }
                   {this.btnAction(`road_tax_sticker`)}
                 </View>:this.removeLoading()
               :
@@ -318,7 +331,11 @@ class InspectionScreen extends Component {
                 {this.state.road_tax ?
                 !this.state.removeLoadingRoadTax ?
                 <View style={styles.btnImage}>
-                  {this.state.road_tax && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax}`}} />}
+                  {this.state.road_tax && 
+                  !this.state.uploadLoadingRoadTax?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax}`}} />
+                  :this.uploadLoading()
+                  }
                   {this.btnAction(`road_tax`)}
                 </View>:this.removeLoading()
               :
@@ -330,7 +347,11 @@ class InspectionScreen extends Component {
             {this.state.road_tax_2 ?
                 !this.state.removeLoadingRoadTax2 ?
                 <View style={styles.btnImage}>
-                  {this.state.road_tax_2 && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax_2}`}} />}
+                  {this.state.road_tax_2 && 
+                  !this.state.uploadLoadingRoadTax2 ? 
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.road_tax_2}`}} />
+                  :this.uploadLoading()
+                  }
                   {this.btnAction(`road_tax_2`)}
                 </View> : this.removeLoading()
               :

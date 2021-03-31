@@ -15,20 +15,13 @@ class DriverScreen extends Component {
     super(props);
     this.state = {
         postLoading:true,
-        driver_photo:'',
-        name_driver:'',
-        name_driver_input:false,
-        tel_driver:'',
-        tel_driver_input:false,
-        position_driver:'',
-        position_driver_input:false,
-        dob_driver:'',
-        license_no_driver:'',
-        license_issued_date:'',
-        license_expiry_date:'',
-        
-        indentification_photo:'',
-        driver_license_photo:'',
+
+        insurer:'',
+        policy_no:'',
+        period_of_cover_from:'',
+        period_of_cover_to:'',
+        insurance_photo:'',
+
         visible:false,
         index:0,
 
@@ -36,21 +29,15 @@ class DriverScreen extends Component {
         pickDateDOB:false,
         pickDateExpireOn:false,
 
-        uploadLoadingDriverPhoto: false,
-        removeLoadingDriverPhoto: false,
-
-        uploadLoadingIdentification: false,
-        removeLoadingIdentification: false,
-
-        uploadLoadingDriverLicense: false,
-        removeLoadingDriverLicense: false,
+        uploadLoadingInsurancePhoto: false,
+        removeLoadingInsurancePhoto: false,
 
         modalVisible:false,
         message: "",
         refreshing:false,
 
         editAction:false,
-        updateDriverInformationLoading: false,
+        updateInsuranceInformationLoading: false,
         categories: [],
 
     };
@@ -94,13 +81,14 @@ class DriverScreen extends Component {
   uploadImage = async (result,name) => {
     const {route} = this.props; const {post_id} = route.params;
     var base_url = '';
-    if(name==="driver_photo"){ 
-      var base_url = "https://equipment.mohapiphup.com/api/uploadImageDriverPhoto";
-      this.setState({uploadLoadingDriverPhoto:true})
-    };
     let uploadData = new FormData();
     var old = '';
-    if(name==='driver_photo'){var old = this.state.driver_photo;}
+    console.warn(name);
+    if(name==="insurance_photo"){ 
+      var base_url = "https://equipment.mohapiphup.com/api/uploadImageInsurancePhoto";
+      var old = this.state.insurance_photo;
+      this.setState({uploadLoadingInsurancePhoto:true})
+    };
     uploadData.append('id',post_id)
     uploadData.append(name,{ uri: result.uri,type: 'image/jpeg',size: null,name: 'file_upload.jpg'})
     uploadData.append(`${name}_old`, old)
@@ -108,16 +96,16 @@ class DriverScreen extends Component {
     .then(response=>response.json())
     .then(response => {
       this.alertStatus(response.status,response.message);
-      if(name==='driver_photo'){this.setState({uploadLoadingDriverPhoto:false})}
+      if(name==='insurance_photo'){this.setState({uploadLoadingInsurancePhoto:false})}
     });
   }
   destroyImage = (name) => {
     const {route} = this.props;
     const {post_id} = route.params;
     var base_url = '';
-    if(name==='driver_photo'){
-      var base_url = "https://equipment.mohapiphup.com/api/destroyImageDriverPhoto";
-      this.setState({removeLoadingDriverPhoto:true});
+    if(name==='insurance_photo'){
+      var base_url = "https://equipment.mohapiphup.com/api/destroyImageInsurancePhoto";
+      this.setState({removeLoadingInsurancePhoto:true});
     }
     let uploadData = new FormData();
     uploadData.append('id',post_id)
@@ -125,7 +113,7 @@ class DriverScreen extends Component {
     .then(response=>response.json())
     .then(response => {
       this.alertStatus(response.status,response.message);
-      if(name==='driver_photo'){this.setState({removeLoadingDriverPhoto:false})};
+      if(name==='insurance_photo'){this.setState({removeLoadingInsurancePhoto:false})};
     });
   }
 
@@ -136,7 +124,10 @@ class DriverScreen extends Component {
     this.setState({updateInsuranceInformationLoading:true});
     await axios.post(base_url, {
       id: post_id,
-      name_driver: this.state.name_driver&&this.state.name_driver,
+      insurer:this.state.insurer,
+      policy_no:this.state.policy_no,
+      period_of_cover_from:this.state.period_of_cover_from,
+      period_of_cover_to:this.state.period_of_cover_to,
     })
     .then((response) => {
       this.alertStatus(response.data.status,response.data.message);
@@ -155,7 +146,11 @@ class DriverScreen extends Component {
     .then((responseJson)=>{
       this.setState({
         postLoading:false,
-        name_driver: responseJson.operator.name_driver?responseJson.operator.name_driver:null,
+        insurer: responseJson.insurance && responseJson.insurance.insurer,
+        policy_no: responseJson.insurance && responseJson.insurance.policy_no,
+        period_of_cover_from:responseJson.insurance && responseJson.insurance.period_of_cover_from,
+        period_of_cover_to:responseJson.insurance && responseJson.insurance.period_of_cover_to,
+        insurance_photo:responseJson.insurance && responseJson.insurance.insurance_photo,
       });
     }).catch(error=>{
       console.log(error);
@@ -192,7 +187,7 @@ class DriverScreen extends Component {
     return(
     <>
       <Button onPress={()=> this.destroyImage(action) } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-      <Button onPress={()=> console.warn(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+      <Button onPress={()=> this.pickImage(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
     </>
     )
   }
@@ -206,9 +201,13 @@ class DriverScreen extends Component {
       </View>
     )
   }
+                 
   Input=(label,name,value)=>{
     var input = <TextInput style={styles.input} placeholder={label} value={value} />;
-    if( name === 'name_driver' ){ var input = <TextInput onChangeText={ (value) => this.setState({name_driver:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'insurer' ){ var input = <TextInput onChangeText={ (value) => this.setState({insurer:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'policy_no' ){ var input = <TextInput onChangeText={ (value) => this.setState({policy_no:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'period_of_cover_from' ){ var input = <TextInput onChangeText={ (value) => this.setState({period_of_cover_from:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'period_of_cover_to' ){ var input = <TextInput onChangeText={ (value) => this.setState({period_of_cover_to:value})} style={styles.input} placeholder={label} value={value} /> }
     return(
       <View>
         <Text>{label}</Text>
@@ -227,23 +226,26 @@ class DriverScreen extends Component {
               showIcon={false}
               mode="date" placeholder="Date Of Birth" format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
               onDateChange={(date) => { 
-                if(name==='dob_driver'){ this.setState({dob_driver:date}) }
+                if(name==='period_of_cover_to'){ this.setState({period_of_cover_to:date}) }
+                if(name==='period_of_cover_from'){ this.setState({period_of_cover_from:date}) }
               }}
               cancelBtnText="Clear"
               onClear={()=>{
-                if(name==='dob_driver'){ this.setState({dob_driver:null}) }
+                if(name==='period_of_cover_to'){ this.setState({period_of_cover_to:null}) }
+                if(name==='period_of_cover_from'){ this.setState({period_of_cover_from:null}) }
               }}
             />
         </View>
       )
   }
+  ImageFooter=(current_index,total_images)=>{ return(<View style={{ alignItems:"center",padding: 20, }}><Text style={{ color:"white" }}>{current_index+1}/{total_images}</Text></View>)}
   render() {
     const web = "https://equipment.mohapiphup.com/"
     const images = [
-        this.state.driver_photo && web+this.state.driver_photo,
+        this.state.insurance_photo && web+this.state.insurance_photo,
     ];
     const imagesView = [
-        this.state.driver_photo && { uri: web+this.state.driver_photo},
+        this.state.insurance_photo && { uri: web+this.state.insurance_photo},
     ];
     if (this.state.postLoading) {
         return(
@@ -263,15 +265,21 @@ class DriverScreen extends Component {
             {this.modal()}
             <View style={{ position:"relative" }}>
             <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != null})} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop resizeMethod={'resize'} resizeMode={'cover'} imageLoadingColor="#2196F3" />
-            <ImageView images={imagesView.filter(function(url){ return url != null})} imageIndex={this.state.index} visible={this.state.visible} onRequestClose={()=>this.setState({visible:false})}/>
+            <ImageView FooterComponent={({ imageIndex })=> this.ImageFooter(imageIndex,images.filter(function(url){ return url != null}).length) }  images={imagesView.filter(function(url){ return url != null})} imageIndex={this.state.index} visible={this.state.visible} onRequestClose={()=>this.setState({visible:false})}/>
             <View style={styles.container}>
                 {this.state.editAction ? 
                 <>
-                  {this.Input('Name','name_driver',this.state.name_driver)}
+                  {this.Input('Insurer','insurer',this.state.insurer)}
+                  {this.Input('Policy no','policy_no',this.state.policy_no)}
+                  {this.DatePicker('Period from','period_of_cover_from',this.state.period_of_cover_from)}
+                  {this.DatePicker('Period To','period_of_cover_to',this.state.period_of_cover_to)}
                 </>
                 :
                 <>
-                {this.List('Name',this.state.name_driver)}
+                {this.List('Insurer',this.state.insurer)}
+                {this.List('Policy no',this.state.policy_no)}
+                {this.List('Period from',this.state.period_of_cover_from)}
+                {this.List('Period To',this.state.period_of_cover_to)}
                 </>
                 }
             </View>
@@ -279,24 +287,27 @@ class DriverScreen extends Component {
               onPress={ ()=> this.state.editAction ? this.setState({ editAction:false },()=>this.updateInsuranceInformation()): this.setState({ editAction:true })} 
               title={this.state.editAction ? "Update":"Edit"} 
               containerStyle={{ marginHorizontal:40,marginVertical:20}}
-              loading={this.state.updateDriverInformationLoading}
+              loading={this.state.updateInsuranceInformationLoading}
               icon={
                 <Icon type="font-awsome" name={this.state.editAction?"check":"edit"} color="#fff" style={{ marginRight:10 }} size={20} />
               }
             />
           
           <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
-              {/* Driver Photo */}
-              {this.state.driver_photo ?
-                !this.state.removeLoadingDriverPhoto ?
+              {this.state.insurance_photo ?
+                !this.state.removeLoadingInsurancePhoto ?
                 <View style={styles.btnImage}>
-                  {this.state.driver_photo && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
-                  {this.btnAction('driver_photo')}
+                  {this.state.insurance_photo && 
+                    !this.state.uploadLoadingInsurancePhoto ? 
+                    <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.insurance_photo}`}} />
+                    :this.uploadLoading()
+                  }
+                  {this.btnAction('insurance_photo')}
                 </View>:this.removeLoading()
               :
-              <TouchableOpacity onPress={ ()=> this.pickImage('driver_photo')} disabled={this.state.uploadLoadingDriverPhoto}>
+              <TouchableOpacity onPress={ ()=> this.pickImage('insurance_photo') } disabled={this.state.uploadLoadingInsurancePhoto}>
                 <View style={styles.btnImage}>
-                {this.state.uploadLoadingDriverPhoto ? this.uploadLoading() : this.blankBox(`Driver`)}
+                  {this.state.uploadLoadingInsurancePhoto ? this.uploadLoading() : this.blankBox(`Insurance`)}
                 </View>
               </TouchableOpacity>}
             </View>

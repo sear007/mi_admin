@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {View, Text,Linking,Image,ActivityIndicator,RefreshControl,Dimensions,TextInput,KeyboardAvoidingView} from 'react-native';
+import {View, Text,Linking,Image,ActivityIndicator,RefreshControl,Dimensions,TextInput,KeyboardAvoidingView,SafeAreaView,PermissionsAndroid,Platform} from 'react-native';
 import ImageView from "react-native-image-viewing";
 import { SliderBox } from "react-native-image-slider-box";
 import { BulletList } from 'react-content-loader/native'
@@ -10,6 +10,7 @@ import Moment from 'moment';
 import Modal from 'react-native-modal';
 import DatePicker from 'react-native-datepicker'
 import axios from "axios";
+import CameraRoll from "@react-native-community/cameraroll";
 class DriverScreen extends Component {
   constructor(props) {
     super(props);
@@ -229,7 +230,7 @@ class DriverScreen extends Component {
     return(
     <>
       <Button onPress={()=> this.destroyImage(action) } buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
-      <Button onPress={()=> console.warn(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
+      <Button onPress={()=> this.pickImage(action) } buttonStyle={styles.btnCircleEdit} containerStyle={styles.btnEdit}   icon={<Icon type="font-awesome" size={15} name="edit" color="#000" />} />
     </>
     )
   }
@@ -284,6 +285,26 @@ class DriverScreen extends Component {
         </View>
       )
   }
+
+hasAndroidPermission= async()=>{
+  const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+  const hasPermission = await PermissionsAndroid.check(permission);
+  if (hasPermission) {
+      return true;
+  }
+  const status = await PermissionsAndroid.request(permission);
+  return status === 'granted';
+}
+savePicture=async()=>{
+  if (Platform.OS === "android" && !(await this.hasAndroidPermission())) {
+    return;
+  }
+  console.log(this.hasAndroidPermission());
+  CameraRoll.save(`https://equipment.mohapiphup.com/assets/imgs/logo//052ee896212460765cfff4304c8de67e.png`, 'photo')
+}
+
+ImageFooter=(current_index,total_images)=>{ return(<View style={{ alignItems:"center",padding: 20, }}><Text style={{ color:"white" }}>{current_index+1}/{total_images}</Text></View>)}
+
   render() {
     const web = "https://equipment.mohapiphup.com/"
     const images = [
@@ -314,7 +335,9 @@ class DriverScreen extends Component {
             {this.modal()}
             <View style={{ position:"relative" }}>
             <SliderBox sliderBoxHeight={300} images={images.filter(function(url){ return url != null})} onCurrentImagePressed={(index)=> this.setState({visible:true,index})} dotColor="#FFEE58" inactiveDotColor="#90A4AE" autoplay circleLoop resizeMethod={'resize'} resizeMode={'cover'} imageLoadingColor="#2196F3" />
-            <ImageView images={imagesView.filter(function(url){ return url != null})} imageIndex={this.state.index} visible={this.state.visible} onRequestClose={()=>this.setState({visible:false})}/>
+            <ImageView
+            FooterComponent={({ imageIndex })=> this.ImageFooter(imageIndex,images.filter(function(url){ return url != null}).length) } 
+            images={imagesView.filter(function(url){ return url != null})} imageIndex={this.state.index} visible={this.state.visible} onRequestClose={()=>this.setState({visible:false})}/>
             <View style={styles.container}>
                 {this.state.editAction ? 
                 <>
@@ -353,7 +376,11 @@ class DriverScreen extends Component {
               {this.state.driver_photo ?
                 !this.state.removeLoadingDriverPhoto ?
                 <View style={styles.btnImage}>
-                  {this.state.driver_photo && <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />}
+                  {this.state.driver_photo && 
+                  !this.state.uploadLoadingDriverPhoto?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_photo}`}} />
+                  :this.uploadLoading()
+                  }
                   {this.btnAction('driver_photo')}
                 </View>:this.removeLoading()
               :
@@ -367,7 +394,11 @@ class DriverScreen extends Component {
             {this.state.indentification_photo ?
                 !this.state.removeLoadingIdentification ?
                 <View style={styles.btnImage}>
-                  {this.state.indentification_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />}
+                  {this.state.indentification_photo&& 
+                  !this.state.uploadLoadingIdentification?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.indentification_photo}`}} />
+                  :this.uploadLoading()
+                  }
                   {this.btnAction('indentification_photo')}
                 </View>:this.removeLoading()
               :
@@ -381,7 +412,12 @@ class DriverScreen extends Component {
               this.state.driver_license_photo ?
                 !this.state.removeLoadingDriverLicense ?
                 <View style={styles.btnImage}>
-                  {this.state.driver_license_photo&& <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_license_photo}`}} />}
+                  {this.state.driver_license_photo&& 
+                  !this.state.uploadLoadingDriverLicense ?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `https://equipment.mohapiphup.com/${this.state.driver_license_photo}`}} />
+                  :this.uploadLoading()
+                  }
+                  
                   {this.btnAction('driver_license_photo')}
                 </View>:this.removeLoading()
               :
