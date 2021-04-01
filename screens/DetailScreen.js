@@ -17,8 +17,11 @@ const TabOption = {
 }
 class DetailScreen extends Component {
   render() {
-    const {route} = this.props;
-    const {post_id} = route.params;
+    const {navigation,route} = this.props;
+    const {post_id,old_equipment_id} = route.params;
+    navigation.setOptions({
+      title:old_equipment_id
+    })
     return(
         <Tab.Navigator initialRouteName="DriverInformation" tabBarOptions={TabOption}>
             <Tab.Screen initialParams={{ post_id: post_id }}  name="DriverInformation" options={{ tabBarLabel: 'Driver Information' }}>{post_id => <DriverScreen {...post_id} />}</Tab.Screen>

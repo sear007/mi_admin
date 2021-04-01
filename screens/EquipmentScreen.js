@@ -72,6 +72,7 @@ class EquipmentScreen extends Component {
     this.requestPostData();
     this.requestCategory();
     this.requestBrands();
+    
   }
   requestCategory = async () =>{
     await fetch('https://equipment.mohapiphup.com/api/categories_app')
@@ -129,8 +130,13 @@ class EquipmentScreen extends Component {
       this.setState({modalVisible:true,message:"Error Network" });
     }
   }
-
+ 
   destroyImage = async (id) => {
+    if(this.state.photos.length<=1){
+      alert("There're only a picture. Add more picture first!");
+      this.setState({removeLoading:false})
+      return
+    }
     let base_url = "https://equipment.mohapiphup.com/api/destroy_image";
     let uploadData = new FormData();
     uploadData.append('id', id)

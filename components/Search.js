@@ -65,7 +65,7 @@ class Search extends Component {
         { this.state.showArea ?
           this.state.searchData.map((d,i)=>(
             <View style={{ marginBottom:10}}>
-              <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={`categories_${i}`} bottomDivider>
+              <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id,old_equipment_id:d.old_equipment_id}) } key={`categories_${i}`} bottomDivider>
                 <Avatar activeOpacity={0.7} size="large" source={{uri: `https://equipment.mohapiphup.com/${d.thumbnail.thumbnail}`}} />
                   <ListItem.Content>
                     <ListItem.Title>{d.old_equipment_id}</ListItem.Title>

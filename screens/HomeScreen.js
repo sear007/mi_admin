@@ -52,7 +52,7 @@ export default class HomeScreen extends Component {
         {this.state.categoriesLoading ? <BulletList />:<View/>}
         <View style={[styles.countBoxWrapper,styles.container]}>
           {this.state.categories.map(d=>(
-            <TouchableOpacity onPress={()=>this.props.navigation.navigate('CategoryScreen',{category_id:d.id})}>
+            <TouchableOpacity onPress={()=>this.props.navigation.navigate('CategoryScreen',{category_id:d.id,category_name:d.name_en})}>
               <View style={styles.countBox}>
                 <Text> {d.name_en}</Text>
                 <View style={styles.badgeCountBox}><Text>{d.posts_count}</Text></View>
@@ -73,7 +73,7 @@ export default class HomeScreen extends Component {
               </View>
               {this.state.expireData.map((d,i)=>(
                 i<5 ?
-                <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id}) } key={`expired_insture${i}`} bottomDivider>
+                <ListItem onPress={()=> this.props.navigation.navigate('DetailScreen',{post_id:d.id,old_equipment_id:d.old_equipment_id}) } key={`expired_insture${i}`} bottomDivider>
                 <Icon color="#ca3f3f" size={30} name="alert-circle-outline" />            
                 <ListItem.Content>
                     <ListItem.Subtitle>{d.old_equipment_id}</ListItem.Subtitle>
