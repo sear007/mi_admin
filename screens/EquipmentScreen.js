@@ -16,6 +16,8 @@ class EquipmentScreen extends Component {
     super(props);
     this.state = {
         postLoading:true,
+
+        
         equipment_id:'',
         old_equipment_id:'',
         category:'',

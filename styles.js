@@ -198,5 +198,10 @@ module.exports = StyleSheet.create({
         fontSize:14,
         color:"#444",
         fontWeight: "bold",
-      }
+      },
+      flexCenter:{
+        flex:1,
+        justifyContent:"center",
+        alignItems:"center"
+      },
 });

@@ -4,12 +4,13 @@ import { NavigationContainer,DrawerActions,useNavigation } from '@react-navigati
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { enableScreens } from 'react-native-screens';
 import { createNativeStackNavigator } from 'react-native-screens/native-stack';
-import { Button,} from 'react-native-elements';
+import { Button,Icon} from 'react-native-elements';
 import HomeScreen from './screens/HomeScreen';
 import DetailScreen from './screens/DetailScreen';
 import EditScreen from './screens/EditScreen';
 import ExpiredInsurance from './screens/ExpiredInsurance';
 import CategoryScreen from './screens/CategoryScreen';
+import UploadScreen from './screens/UploadScreen';
 enableScreens();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -22,7 +23,9 @@ function MyStack() {
       component={HomeScreen} 
       options={{ 
         headerTitle:"Mohapiphup Admin",
-        headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />) }} />
+        headerLeft: ()=>(<Button onPress={() => navigation.dispatch(DrawerActions.openDrawer())} type="clear" icon={{ name:'menu',size:30 }} />), 
+        headerRight: ()=>(<Button onPress={() => navigation.navigate('UploadScreen') } type="clear" icon={<Icon type="font-awesome" name="upload" size={30} />} />), 
+        }} />
       <Stack.Screen  name="EditScreen" component={EditScreen} />
     <Stack.Screen
       name="DetailScreen"
@@ -43,6 +46,13 @@ function MyStack() {
       options={{
         headerBackTitleVisible:false
       }}/>
+      <Stack.Screen
+      name="UploadScreen"
+      component={UploadScreen}
+      options={{
+        title:'New Equipment',
+        headerBackTitleVisible:false
+      }}/>  
     </Stack.Navigator>
   );
 }
