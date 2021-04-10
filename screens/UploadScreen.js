@@ -30,15 +30,15 @@ class UploadScreen extends Component {
         driver_license_photo:'',
 
 
-
-
         
         EquipmentScreen: true,
         old_equipment_id:``,
         plate_number:``,
         categories:[],
+        category:``,
         category_id:``,
         brands:[],
+        brand:``,
         brand_id:``,
         sub_categories:[],
         sub_category_id:``,
@@ -46,93 +46,59 @@ class UploadScreen extends Component {
         year:'',
         engine:'',
         photoEquipment:[],
+        photoEquipment_uri:[],
 
 
 
         InsuranceScreen: false,
+        insurer: ``,
+        policy_no: ``,
+        period_of_cover_from:``,
+        period_of_cover_to:``,
+        insurance_photo:``,
+        insurance_photo_uri:``,
+
+
+
         InspectionScreen: false,
-
-
-
-
-
-
+        inspection_certificate:'',
+        inspection_certificate_uri:'',
+        road_tax_sticker:'',
+        road_tax_sticker_uri:'',
+        road_tax:'',
+        road_tax_uri:'',
+        road_tax_2:'',
+        road_tax_2_uri:'',
     };
   }
   componentDidMount(){
       this.requestCategory();
       this.requestBrands();
   }
-
-  requestSubCategory = async () =>{
-    await fetch('https://equipment.mohapiphup.com/api/sub_category/'+this.state.category_id)
+  getCategoryName = async()=>{
+    await fetch('http://127.0.0.1:8000/api/name_category/'+this.state.category_id)
     .then((response)=>response.json())
     .then((responseJson)=>{
-      this.setState({
-        sub_categories: responseJson,
-      });
-      console.log(this.state.sub_categories);
-    }).catch(error=>{
-      console.log(error);
+      this.setState({category:responseJson});
     })
   }
-  requestCategory = async () =>{
-    await fetch('https://equipment.mohapiphup.com/api/categories_app')
+  getBrandName = async()=>{
+    await fetch('http://127.0.0.1:8000/api/name_brand/'+this.state.brand_id)
     .then((response)=>response.json())
     .then((responseJson)=>{
-      this.setState({
-        categories: responseJson,
-      });
-    }).catch(error=>{
-      console.log(error);
+      this.setState({brand:responseJson});
+      console.log(this.state.brand);
     })
-  }
-  requestBrands = async () =>{
-    await fetch('https://equipment.mohapiphup.com/api/brands')
-    .then((response)=>response.json())
-    .then((responseJson)=>{
-      this.setState({
-        brands: responseJson,
-      });
-    }).catch(error=>{
-      console.log(error);
-    })
-  }
-  EquipmentScreen=()=>{
-     return(
-         
-        <View style={{ padding:10 }}>
-            <View style={{ marginVertical:20 }}>
-                <Text>{this.state.old_equipment_id}</Text>
-                <Text>{this.state.plate_number}</Text>
-                <Text>{this.state.category_id}</Text>
-                <Text>{this.state.brand_id}</Text>
-                <Text>{this.state.sub_category_id}</Text>
-                <Text>{this.state.payment}</Text>
-                <Text>{this.state.year}</Text>
-                <Text>{this.state.engine}</Text>
-                <Text>{this.state.photoEquipment.toString()}</Text>
-            </View>
-            {this.Input('ID','old_equipment_id',this.state.old_equipment_id)}
-            {this.Input('Plate','plate_number',this.state.plate_number)}
-            {this.PickerSelect(this.state.category,'category_id',this.state.category_id)}
-            {this.PickerSelect(this.state.marker&&this.state.marker,'brand_id',this.state.brand_id&&this.state.brand_id)}
-            {this.PickerSelect(this.state.model,'sub_category_id',this.state.sub_category_id)}
-            {this.PickerSelect(this.state.payment,'payment',this.state.payment)}
-            {this.Input('Year','year',this.state.year)}
-            {this.Input('Engine','engine',this.state.engine)}
-        </View>
-     )
   }
   PickerSelect = (label,name,value) => {
     if(name==='category_id'){
       var Picker = 
       <>
       <Text>Category</Text>
-      <RNPickerSelect placeholder={{label: `Choose Category`,value:null}}
+      <RNPickerSelect placeholder={{label: this.state.category ? this.state.category:'Choose Category',value:this.state.category_id}}
         items={(this.state.categories.map(item=>({ label: item.name_en, value: item.id })))}
         style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
-        onValueChange={(value) =>  this.setState({category_id:value,sub_category_id:null,},()=>this.requestSubCategory())}
+        onValueChange={(value) => this.setState({category_id:value,sub_category_id:null},()=> this.requestSubCategory())}
       />
       </>
     }
@@ -140,10 +106,10 @@ class UploadScreen extends Component {
       var Picker = 
       <>
       <Text>Marker</Text>
-      <RNPickerSelect disabled={this.state.brands.length > 0 ? false:true} placeholder={{label:`Choose Brand`,value: null}}
+      <RNPickerSelect disabled={this.state.brands.length > 0 ? false:true} placeholder={{label:this.state.brand ? this.state.brand:'Choose Marker',value: this.state.brand_id}}
         items={(this.state.brands.map(item=>({ label: item.name, value: item.id })))}
         style={{placeholder: {color: '#ccc',},inputIOS:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17},inputAndroid:{height: 40,marginBottom:10,borderWidth: 1,borderColor:"#888",padding: 10,fontSize:17,color:"#000"}}}
-        onValueChange={(value) =>this.setState({brand_id:value})}
+        onValueChange={(value) =>this.setState({brand_id:value},()=>this.getBrandName())}
       />
     </>
     }
@@ -175,9 +141,251 @@ class UploadScreen extends Component {
     return Picker;
   }
 
-  DriverScreen =()=>{
+  requestSubCategory = async () =>{
+    await fetch('https://equipment.mohapiphup.com/api/sub_category/'+this.state.category_id)
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      this.setState({
+        sub_categories: responseJson,
+      },()=> this.getCategoryName());
+    }).catch(error=>{
+      console.log(error);
+    })
+  }
+  requestCategory = async () =>{
+    await fetch('https://equipment.mohapiphup.com/api/categories_app')
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      this.setState({
+        categories: responseJson,
+      });
+    }).catch(error=>{
+      console.log(error);
+    })
+  }
+  requestBrands = async () =>{
+    await fetch('https://equipment.mohapiphup.com/api/brands')
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      this.setState({
+        brands: responseJson,
+      });
+    }).catch(error=>{
+      console.log(error);
+    })
+  }
+  
 
-    
+  Submition = async()=>{
+    let base_url = "http://127.0.0.1:8000/api/storePost";
+    this.setState({updateInsuranceInformationLoading:true});
+    await axios.post(base_url, { 
+      equipment_id:this.state.equipment_id,
+      old_equipment_id:this.state.old_equipment_id,
+      plate_number:this.state.plate_number,
+      category_id:this.state.category_id,
+      city_id:this.state.city_id,
+      sub_category_id:this.state.sub_category_id,
+      brand_id:this.state.brand_id,
+      
+      photoEquipment:this.state.photoEquipment,
+      insurer: this.state.insurer,
+      policy_no: this.state.policy_no,
+      period_of_cover_from:this.state.period_of_cover_from,
+      period_of_cover_to:this.state.period_of_cover_to,
+      insurance_photo: this.state.insurance_photo,
+
+      driver_photo: this.state.driver_photo,
+      name_driver:this.state.name_driver,
+      tel_driver:this.state.tel_driver,
+      position_driver:this.state.position_driver,
+      dob_driver:this.state.dob_driver,
+      license_no_driver:this.state.license_no_driver,
+      license_issued_date:this.state.license_issued_date,
+      license_expiry_date:this.state.license_expiry_date,
+      indentification_photo:this.state.indentification_photo,
+      driver_license_photo:this.state.driver_license_photo,
+      inspection_certificate:this.state.inspection_certificate,
+      inspection_certificate_2:this.state.inspection_certificate_2,
+      road_tax:this.state.road_tax,
+      road_tax_2:this.state.road_tax_2,
+      road_tax_sticker:this.state.road_tax_sticker,
+      payment:this.state.payment,
+    },{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then((response) => {
+      console.log(response.data);
+    }).catch(error => {
+      console.log(error);
+    });
+  }
+
+  InspectionScreen=()=>{
+    return(
+      <View style={{ flexDirection:"row", flexWrap:"wrap"}}>
+            {/* Inspection I Photo */}
+            {this.state.inspection_certificate ?
+                !this.state.removeLoadingInspection ?
+                <View style={styles.btnImage}>
+                  {this.state.inspection_certificate && 
+                    !this.state.uploadLoadingInspection ?
+                    <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.inspection_certificate_uri}`}} />
+                    : this.uploadLoading()
+                  }
+                  {this.btnAction('inspection_certificate')}
+                </View>:this.removeLoading()
+              :
+              <TouchableOpacity onPress={ ()=> this.pickImage('inspection_certificate')} disabled={this.state.uploadLoadingInspection}>
+                <View style={styles.btnImage}>{this.state.uploadLoadingInspection ? this.uploadLoading() : this.blankBox(`ឆៀកឡាន ១`)}</View>
+              </TouchableOpacity>}
+
+              {this.state.inspection_certificate_2 ?
+                !this.state.removeLoadingInspection2 ?
+                <View style={styles.btnImage}>
+                  {this.state.inspection_certificate_2 && 
+                  !this.state.uploadLoadingInspection2?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.inspection_certificate_2_uri}`}} />
+                  :this.uploadLoading() 
+                  }
+                  {this.btnAction('inspection_certificate_2')}
+                </View>:this.removeLoading()
+              :
+              <TouchableOpacity onPress={ ()=> this.pickImage('inspection_certificate_2')} disabled={this.state.uploadLoadingInspection2}>
+                <View style={styles.btnImage}>{this.state.uploadLoadingInspection2 ? this.uploadLoading() : this.blankBox(`ឈៀកឡាន ២`)}</View>
+              </TouchableOpacity>}
+
+
+            {/* Sticker */}
+            {this.state.road_tax_sticker ?
+                !this.state.removeLoadingSticker ?
+                <View style={styles.btnImage}>
+                  {this.state.road_tax_sticker && 
+                  !this.state.uploadLoadingSticker?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.road_tax_sticker_uri}`}} />
+                  :this.uploadLoading() 
+                  }
+                  {this.btnAction(`road_tax_sticker`)}
+                </View>:this.removeLoading()
+              :
+              <TouchableOpacity onPress={ ()=> this.pickImage('road_tax_sticker')} disabled={this.state.uploadLoadingSticker}>
+                  <View style={styles.btnImage}>{this.state.uploadLoadingSticker ? this.uploadLoading() : this.blankBox(`ពន្ធឡាន`)}</View>
+              </TouchableOpacity>}
+
+
+                {/* Road Tax */}
+                {this.state.road_tax ?
+                !this.state.removeLoadingRoadTax ?
+                <View style={styles.btnImage}>
+                  {this.state.road_tax && 
+                  !this.state.uploadLoadingRoadTax?
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.road_tax_uri}`}} />
+                  :this.uploadLoading()
+                  }
+                  {this.btnAction(`road_tax`)}
+                </View>:this.removeLoading()
+              :
+              <TouchableOpacity onPress={ ()=> this.pickImage('road_tax')} disabled={this.state.uploadLoadingRoadTax}>
+                <View style={styles.btnImage}>{this.state.uploadLoadingRoadTax ? this.uploadLoading() : this.blankBox(`កាតគ្រីឡាន ១`)}</View>
+              </TouchableOpacity>}
+
+            {/* Road Tax 2 */}
+            {this.state.road_tax_2 ?
+                !this.state.removeLoadingRoadTax2 ?
+                <View style={styles.btnImage}>
+                  {this.state.road_tax_2 && 
+                  !this.state.uploadLoadingRoadTax2 ? 
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.road_tax_2_uri}`}} />
+                  :this.uploadLoading()
+                  }
+                  {this.btnAction(`road_tax_2`)}
+                </View> : this.removeLoading()
+              :
+              <TouchableOpacity onPress={ () => this.pickImage('road_tax_2')} disabled={this.state.uploadLoadingRoadTax2}>
+                  <View style={styles.btnImage}>{this.state.uploadLoadingRoadTax2 ? this.uploadLoading(): this.blankBox(`កាតគ្រីឡាន ២`)}</View>
+              </TouchableOpacity>}
+
+          </View>
+    )
+  }
+
+  InsuranceScreen=()=>{
+    return(<>
+      <View style={{ padding:10 }}>
+        {this.Input('Insurer','insurer',this.state.insurer)}
+        {this.Input('Policy no','policy_no',this.state.policy_no)}
+        {this.DatePicker('Period from','period_of_cover_from',this.state.period_of_cover_from)}
+        {this.DatePicker('Period To','period_of_cover_to',this.state.period_of_cover_to)}
+      </View>
+      <View style={{ flexDirection:"row", flexWrap:"wrap" }}>
+            {this.state.insurance_photo ?
+              !this.state.removeLoadingInsurancePhoto ?
+              <View style={styles.btnImage}>
+                {this.state.insurance_photo && 
+                  !this.state.uploadLoadingInsurancePhoto ? 
+                  <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: `${this.state.insurance_photo_uri}`}} />
+                  :this.uploadLoading()
+                }
+                {this.btnAction('insurance_photo')}
+              </View>:this.removeLoading()
+            :
+            <TouchableOpacity onPress={ ()=> this.pickImage('insurance_photo') } disabled={this.state.uploadLoadingInsurancePhoto}>
+              <View style={styles.btnImage}>
+                {this.state.uploadLoadingInsurancePhoto ? this.uploadLoading() : this.blankBox(`Insurance`)}
+              </View>
+            </TouchableOpacity>}
+          </View>
+    </>)
+  }
+  EquipmentScreen=()=>{
+     return(
+        <>
+          <View style={{ padding:10 }}>
+            {this.Input('ID','old_equipment_id',this.state.old_equipment_id)}
+            {this.Input('Plate','plate_number',this.state.plate_number)}
+            {this.PickerSelect(this.state.category,'category_id',this.state.category_id)}
+            {this.PickerSelect(this.state.marker&&this.state.marker,'brand_id',this.state.brand_id&&this.state.brand_id)}
+            {this.PickerSelect(this.state.model,'sub_category_id',this.state.sub_category_id)}
+            {this.PickerSelect(this.state.payment,'payment',this.state.payment)}
+            {this.Input('Year','year',this.state.year)}
+            {this.Input('Engine','engine',this.state.engine)}
+          </View>
+
+          <View style={{ flexDirection:"row",flexWrap:'wrap'}}>
+          {
+            this.state.photoEquipment_uri.map((image,key)=>(
+              <View style={styles.btnImage}>
+                <Image resizeMode="cover" style={{ width:Dimensions.get('window').width / 3-12,height:100 }} source={{ uri: image}} />
+                <Button onPress={()=> this.destroyImageEquipment(key)} buttonStyle={styles.btnCircleRemove} containerStyle={styles.btnRemove}   icon={<Icon type="font-awesome" size={15} name="trash" color="#000" />} />
+              </View>
+            ))
+          }
+          <TouchableOpacity onPress={()=> this.pickImage('equipment')} disabled={this.state.uploadLoading}>
+            <View style={styles.btnImage}>
+            {this.state.uploadLoading ? 
+              <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+                <Text style={{marginBottom:5}}>Uploading</Text>
+                <ActivityIndicator />
+              </View>:
+              <View>
+                <Icon name="plus" type="font-awesome" color="#999" size={30} />
+                <Text style={{ color:"#999",marginTop:5 }}>More Picture</Text>
+              </View>
+              
+            }
+            </View>
+          </TouchableOpacity>
+          </View>
+        </>
+
+
+     )
+  }
+  
+
+  DriverScreen =()=>{
     return(
         <>
             
@@ -254,6 +462,18 @@ class UploadScreen extends Component {
 
   }
 
+  pickImageMultiples = async (action) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+      allowsMultipleSelection:true
+    });
+    if (!result.cancelled) {
+        console.log(result);
+    }
+  }
   pickImage = async (action) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -265,12 +485,31 @@ class UploadScreen extends Component {
         if(action === 'driver_photo'){this.setState({driver_photo:result,driver_photo_uri:result.uri})}
         if(action === 'indentification_photo'){this.setState({indentification_photo:result,indentification_photo_uri:result.uri})}
         if(action === 'driver_license_photo'){this.setState({driver_license_photo:result,driver_license_photo_uri:result.uri})}
+        if(action==='equipment'){
+          this.setState({
+            photoEquipment: [...this.state.photoEquipment,result],
+            photoEquipment_uri:[...this.state.photoEquipment_uri,result.uri]
+          });
+          console.log(this.state.photoEquipment);
+        }
+        if(action==='insurance_photo'){this.setState({insurance_photo: result,insurance_photo_uri:result.uri})}
+        if(action==='inspection_certificate'){this.setState({inspection_certificate: result,inspection_certificate_uri:result.uri})}
+        if(action==='inspection_certificate_2'){this.setState({inspection_certificate_2: result,inspection_certificate_2_uri:result.uri})}
+        if(action==='road_tax_sticker'){this.setState({road_tax_sticker: result,road_tax_sticker_uri:result.uri})}
+        if(action==='road_tax'){this.setState({road_tax: result,road_tax_uri:result.uri})}
+        if(action==='road_tax_2'){this.setState({road_tax_2: result,road_tax_2_uri:result.uri})}
     }
   }
   destroyImage = (name) => {
     if(name==='driver_photo'){this.setState({driver_photo:null,driver_photo_url:null});}
     if(name==='indentification_photo'){this.setState({indentification_photo:null,indentification_photo_uri:null});}
     if(name==='driver_license_photo'){this.setState({driver_license_photo:null,driver_license_photo_uri:null});}
+    if(name==='insurance_photo'){this.setState({insurance_photo:null,insurance_photo_uri:null},()=>console.log(this.state.insurance_photo));}
+    if(name==='inspection_certificate'){this.setState({inspection_certificate:null,inspection_certificate_uri:null})}
+    if(name==='inspection_certificate_2'){this.setState({inspection_certificate_2:null,inspection_certificate_2_uri:null})}
+    if(name==='road_tax_sticker'){this.setState({road_tax_sticker:null,road_tax_sticker_uri:null})}
+    if(name==='road_tax'){this.setState({road_tax:null,road_tax_uri:null})}
+    if(name==='road_tax_2'){this.setState({road_tax_2:null,road_tax_2_uri:null})}
   }
 
   Input=(label,name,value)=>{
@@ -298,6 +537,13 @@ class UploadScreen extends Component {
    //Equipment
 
 
+   //Insurance
+   if( name === 'insurer' ){ var input = <TextInput onChangeText={ (value) => this.setState({insurer:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'policy_no' ){ var input = <TextInput onChangeText={ (value) => this.setState({policy_no:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'period_of_cover_from' ){ var input = <TextInput onChangeText={ (value) => this.setState({period_of_cover_from:value})} style={styles.input} placeholder={label} value={value} /> }
+    if( name === 'period_of_cover_to' ){ var input = <TextInput onChangeText={ (value) => this.setState({period_of_cover_to:value})} style={styles.input} placeholder={label} value={value} /> }
+
+
     return(
       <View>
         <Text>{label}</Text>
@@ -314,7 +560,7 @@ class UploadScreen extends Component {
               customStyles={{ dateInput:{borderColor:"#888",height: 40,marginBottom:10, alignItems:"flex-start",padding:10  },dateText:{textAlign:'left',fontSize:17,color:"#000"}}}
               date={value?new Date(Moment(value.split('/').join('-')).format('Y-MM-DD')):``}
               showIcon={false}
-              mode="date" placeholder="Date Of Birth" format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
+              mode="date" placeholder={label} format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
               onDateChange={(date) => { 
                 
                 // Driver
@@ -322,6 +568,11 @@ class UploadScreen extends Component {
                 if(name==='license_issued_date'){ this.setState({license_issued_date:date}) }
                 if(name==='license_expiry_date'){ this.setState({license_expiry_date:date}) }
                 // Driver
+
+                //Insurance
+                if(name==='period_of_cover_to'){ this.setState({period_of_cover_to:date}) }
+                if(name==='period_of_cover_from'){ this.setState({period_of_cover_from:date}) }
+                //Insurance
 
               }}
               cancelBtnText="Clear"
@@ -332,6 +583,11 @@ class UploadScreen extends Component {
                 if(name==='license_issued_date'){ this.setState({license_issued_date:null}) }
                 if(name==='license_expiry_date'){ this.setState({license_expiry_date:null}) }
                 // Driver
+
+                //Insurance
+                if(name==='period_of_cover_to'){ this.setState({period_of_cover_to:null}) }
+                if(name==='period_of_cover_from'){ this.setState({period_of_cover_from:null}) }
+                //Insurance
 
               }}
             />
@@ -378,48 +634,51 @@ class UploadScreen extends Component {
     return (
       <SafeAreaView >
 
-        <View>
+        <ScrollView>
+          <KeyboardAvoidingView>
+          <View>
 
-        <View>
-            {this.state.DriverScreen && this.DriverScreen()}
-            {this.state.EquipmentScreen && this.EquipmentScreen()}
-            {this.state.InsuranceScreen && <Text>Insurance Screen</Text>}
-            {this.state.InspectionScreen && <Text>Inspection Screen</Text>}
-        </View>
-
-
-        {this.state.DriverScreen && 
-        <View style={{ justifyContent:"flex-end",flexDirection:"row",marginVertical:10,padding: 10, }}>
-            <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Driver Ready"
-                onPress={()=> this.setState({DriverScreen: false,EquipmentScreen: true,})} />
-        </View>}
-
-        {this.state.EquipmentScreen&&
-        <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
-            <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
-                onPress={()=> this.setState({DriverScreen: true,EquipmentScreen: false,})}  />
-            <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Equipment Ready"
-                onPress={()=> this.setState({EquipmentScreen: false,InsuranceScreen: true,})} />
-        </View>}
+            <View>
+                {this.state.DriverScreen && this.DriverScreen()}
+                {this.state.EquipmentScreen && this.EquipmentScreen()}
+                {this.state.InsuranceScreen && this.InsuranceScreen()}
+                {this.state.InspectionScreen && this.InspectionScreen()}
+            </View>
 
 
-        {this.state.InsuranceScreen&&
-        <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
-            <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
-                onPress={()=> this.setState({EquipmentScreen: true,InsuranceScreen: false,})}  />
-            <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Insurance Ready"
-                onPress={()=> this.setState({InsuranceScreen: false,InspectionScreen: true,})} />
-        </View>}
+            {this.state.DriverScreen && 
+            <View style={{ justifyContent:"flex-end",flexDirection:"row",marginVertical:10,padding: 10, }}>
+                <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Driver Ready"
+                    onPress={()=> this.setState({DriverScreen: false,EquipmentScreen: true,})} />
+            </View>}
 
-        {this.state.InspectionScreen&&
-        <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
-            <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
-                onPress={()=> this.setState({InsuranceScreen: true,InspectionScreen: false,})}  />
-            <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Submit"
-                onPress={()=> console.log("Submit")} />
-        </View>}
-        </View>
+            {this.state.EquipmentScreen&&
+            <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
+                <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
+                    onPress={()=> this.setState({DriverScreen: true,EquipmentScreen: false,})}  />
+                <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Equipment Ready"
+                    onPress={()=> this.setState({EquipmentScreen: false,InsuranceScreen: true,})} />
+            </View>}
 
+
+            {this.state.InsuranceScreen&&
+            <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
+                <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
+                    onPress={()=> this.setState({EquipmentScreen: true,InsuranceScreen: false,})}  />
+                <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Insurance Ready"
+                    onPress={()=> this.setState({InsuranceScreen: false,InspectionScreen: true,})} />
+            </View>}
+
+            {this.state.InspectionScreen&&
+            <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
+                <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
+                    onPress={()=> this.setState({InsuranceScreen: true,InspectionScreen: false,})}  />
+                <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Submit"
+                    onPress={()=> this.Submition()} />
+            </View>}
+            </View>
+            </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     );
   }

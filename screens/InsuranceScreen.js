@@ -224,7 +224,7 @@ class DriverScreen extends Component {
               customStyles={{ dateInput:{borderColor:"#888",height: 40,marginBottom:10, alignItems:"flex-start",padding:10  },dateText:{textAlign:'left',fontSize:17,color:"#000"}}}
               date={value?new Date(Moment(value.split('/').join('-')).format('Y-MM-DD')):``}
               showIcon={false}
-              mode="date" placeholder="Date Of Birth" format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
+              mode="date" placeholder={label} format="DD/MMMM/YYYY" confirmBtnText="Confirm" cancelBtnText="Cancel"
               onDateChange={(date) => { 
                 if(name==='period_of_cover_to'){ this.setState({period_of_cover_to:date}) }
                 if(name==='period_of_cover_from'){ this.setState({period_of_cover_from:date}) }
