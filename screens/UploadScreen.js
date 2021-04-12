@@ -16,7 +16,7 @@ class UploadScreen extends Component {
     super(props);
     this.state = {
 
-        DriverScreen: false,
+        DriverScreen: true,
         name_driver: ``,
         tel_driver: ``,
         position_driver: ``,
@@ -27,11 +27,13 @@ class UploadScreen extends Component {
         driver_photo:``,
         driver_photo_uri:``,
         indentification_photo:'',
+        indentification_photo_uri:'',
         driver_license_photo:'',
+        driver_license_photo_uri:'',
 
 
         
-        EquipmentScreen: true,
+        EquipmentScreen: false,
         old_equipment_id:``,
         plate_number:``,
         categories:[],
@@ -176,43 +178,41 @@ class UploadScreen extends Component {
   }
   
 
-  Submition = async()=>{
+  Submition = async(photos)=>{
     let base_url = "http://127.0.0.1:8000/api/storePost";
     this.setState({updateInsuranceInformationLoading:true});
-    await axios.post(base_url, { 
-      equipment_id:this.state.equipment_id,
-      old_equipment_id:this.state.old_equipment_id,
-      plate_number:this.state.plate_number,
-      category_id:this.state.category_id,
-      city_id:this.state.city_id,
-      sub_category_id:this.state.sub_category_id,
-      brand_id:this.state.brand_id,
-      
-      photoEquipment:this.state.photoEquipment,
-      insurer: this.state.insurer,
-      policy_no: this.state.policy_no,
-      period_of_cover_from:this.state.period_of_cover_from,
-      period_of_cover_to:this.state.period_of_cover_to,
-      insurance_photo: this.state.insurance_photo,
-
-      driver_photo: this.state.driver_photo,
-      name_driver:this.state.name_driver,
-      tel_driver:this.state.tel_driver,
-      position_driver:this.state.position_driver,
-      dob_driver:this.state.dob_driver,
-      license_no_driver:this.state.license_no_driver,
-      license_issued_date:this.state.license_issued_date,
-      license_expiry_date:this.state.license_expiry_date,
-      indentification_photo:this.state.indentification_photo,
-      driver_license_photo:this.state.driver_license_photo,
-      inspection_certificate:this.state.inspection_certificate,
-      inspection_certificate_2:this.state.inspection_certificate_2,
-      road_tax:this.state.road_tax,
-      road_tax_2:this.state.road_tax_2,
-      road_tax_sticker:this.state.road_tax_sticker,
-      payment:this.state.payment,
-    },{
+    let formData = new FormData();
+    this.state.photoEquipment.forEach((element,key) => {formData.append(`photoEquipment[${key}]`,{ uri: element.uri,type: 'image/jpeg',size: null,name: `file_upload-${key}.jpg`})});
+    formData.append(`old_equipment_id`, this.state.old_equipment_id)
+    formData.append(`plate_number`, this.state.plate_number)
+    formData.append(`category_id`, this.state.category_id)
+    // formData.append(`city_id`, this.state.city_id) 
+    // formData.append(`sub_category_id`, this.state.sub_category_id)
+    // formData.append(`brand_id`, this.state.brand_id)
+    formData.append(`insurer`, this.state.insurer)
+    formData.append(`policy_no`, this.state.policy_no)
+    formData.append(`period_of_cover_from`, this.state.period_of_cover_from)
+    formData.append(`period_of_cover_to`, this.state.period_of_cover_to)
+    formData.append(`insurance_photo`, { uri: this.state.insurance_photo_uri,type: 'image/jpeg',size: null,name: `insurance.jpg`})
+    formData.append(`driver_photo`, { uri: this.state.driver_photo_uri,type: 'image/jpeg',size: null,name: `driver_photo.jpg`})
+    formData.append(`name_driver`, this.state.name_driver)
+    formData.append(`tel_driver`, this.state.tel_driver)
+    formData.append(`position_driver`, this.state.position_driver)
+    formData.append(`dob_driver`, this.state.dob_driver)
+    formData.append(`license_no_driver`, this.state.license_no_driver)
+    formData.append(`license_issued_date`, this.state.license_issued_date)
+    formData.append(`license_expiry_date`, this.state.license_expiry_date)
+    formData.append(`indentification_photo`, { uri: this.state.indentification_photo_uri,type: 'image/jpeg',size: null,name: `indentification.jpg`})
+    formData.append(`driver_license_photo`, { uri: this.state.driver_license_photo_uri,type: 'image/jpeg',size: null,name: `driver_license.jpg`})
+    // formData.append(`inspection_certificate`, this.state.inspection_certificate)
+    // formData.append(`inspection_certificate_2`, this.state.inspection_certificate_2)
+    // formData.append(`road_tax`, this.state.road_tax)
+    // formData.append(`road_tax_2`, this.state.road_tax_2)
+    // formData.append(`road_tax_sticker`, this.state.road_tax_sticker)
+    formData.append(`payment`, 'monthly')
+    await axios.post(base_url, formData,{
       headers: {
+        Accept: "application/json",
         'Content-Type': 'multipart/form-data'
       }
     })
@@ -490,7 +490,6 @@ class UploadScreen extends Component {
             photoEquipment: [...this.state.photoEquipment,result],
             photoEquipment_uri:[...this.state.photoEquipment_uri,result.uri]
           });
-          console.log(this.state.photoEquipment);
         }
         if(action==='insurance_photo'){this.setState({insurance_photo: result,insurance_photo_uri:result.uri})}
         if(action==='inspection_certificate'){this.setState({inspection_certificate: result,inspection_certificate_uri:result.uri})}
@@ -656,7 +655,7 @@ class UploadScreen extends Component {
             <View style={{ justifyContent:"space-between",flexDirection:"row",marginVertical:10,padding: 10,  }}>
                 <Button type="clear" icon={<Icon style={{marginRight:5}} type="font-awesome" name="reply" size={18} />} title="Return"
                     onPress={()=> this.setState({DriverScreen: true,EquipmentScreen: false,})}  />
-                <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Equipment Ready"
+                    <Button iconRight icon={<Icon style={{marginLeft:5}}  type="font-awesome" name="check-circle" size={18} />} title="Equipment Ready"
                     onPress={()=> this.setState({EquipmentScreen: false,InsuranceScreen: true,})} />
             </View>}
 
