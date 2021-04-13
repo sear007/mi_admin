@@ -64,6 +64,8 @@ class UploadScreen extends Component {
 
         InspectionScreen: false,
         inspection_certificate:'',
+        inspection_certificate_2:'',
+        inspection_certificate_2_uri:'',
         inspection_certificate_uri:'',
         road_tax_sticker:'',
         road_tax_sticker_uri:'',
@@ -179,7 +181,7 @@ class UploadScreen extends Component {
   
 
   Submition = async(photos)=>{
-    let base_url = "http://127.0.0.1:8000/api/storePost";
+    let base_url = "https://equipment.mohapiphup.com/api/storePost";
     this.setState({updateInsuranceInformationLoading:true});
     let formData = new FormData();
     this.state.photoEquipment.forEach((element,key) => {formData.append(`photoEquipment[${key}]`,{ uri: element.uri,type: 'image/jpeg',size: null,name: `file_upload-${key}.jpg`})});
@@ -187,14 +189,14 @@ class UploadScreen extends Component {
     formData.append(`plate_number`, this.state.plate_number)
     formData.append(`category_id`, this.state.category_id)
     // formData.append(`city_id`, this.state.city_id) 
-    // formData.append(`sub_category_id`, this.state.sub_category_id)
-    // formData.append(`brand_id`, this.state.brand_id)
+    formData.append(`sub_category_id`, this.state.sub_category_id)
+    formData.append(`brand_id`, this.state.brand_id)
     formData.append(`insurer`, this.state.insurer)
     formData.append(`policy_no`, this.state.policy_no)
     formData.append(`period_of_cover_from`, this.state.period_of_cover_from)
     formData.append(`period_of_cover_to`, this.state.period_of_cover_to)
-    formData.append(`insurance_photo`, { uri: this.state.insurance_photo_uri,type: 'image/jpeg',size: null,name: `insurance.jpg`})
-    formData.append(`driver_photo`, { uri: this.state.driver_photo_uri,type: 'image/jpeg',size: null,name: `driver_photo.jpg`})
+    formData.append(`insurance_photo`, this.state.insurance_photo_uri && { uri: this.state.insurance_photo_uri,type: 'image/jpeg',size: null,name: `insurance.jpg`})
+    formData.append(`driver_photo`, this.state.driver_photo_uri&&{ uri: this.state.driver_photo_uri,type: 'image/jpeg',size: null,name: `driver_photo.jpg`})
     formData.append(`name_driver`, this.state.name_driver)
     formData.append(`tel_driver`, this.state.tel_driver)
     formData.append(`position_driver`, this.state.position_driver)
@@ -202,13 +204,13 @@ class UploadScreen extends Component {
     formData.append(`license_no_driver`, this.state.license_no_driver)
     formData.append(`license_issued_date`, this.state.license_issued_date)
     formData.append(`license_expiry_date`, this.state.license_expiry_date)
-    formData.append(`indentification_photo`, { uri: this.state.indentification_photo_uri,type: 'image/jpeg',size: null,name: `indentification.jpg`})
-    formData.append(`driver_license_photo`, { uri: this.state.driver_license_photo_uri,type: 'image/jpeg',size: null,name: `driver_license.jpg`})
-    // formData.append(`inspection_certificate`, this.state.inspection_certificate)
-    // formData.append(`inspection_certificate_2`, this.state.inspection_certificate_2)
-    // formData.append(`road_tax`, this.state.road_tax)
-    // formData.append(`road_tax_2`, this.state.road_tax_2)
-    // formData.append(`road_tax_sticker`, this.state.road_tax_sticker)
+    formData.append(`indentification_photo`, this.state.indentification_photo_uri && { uri: this.state.indentification_photo_uri,type: 'image/jpeg',size: null,name: `indentification.jpg`})
+    formData.append(`driver_license_photo`, this.state.driver_license_photo_uri && { uri: this.state.driver_license_photo_uri,type: 'image/jpeg',size: null,name: `driver_license.jpg`})
+    formData.append(`inspection_certificate`, this.state.inspection_certificate &&{ uri: this.state.inspection_certificate_uri,type: 'image/jpeg',size: null,name: `inspection_certificate.jpg`})
+    formData.append(`inspection_certificate_2`, this.state.inspection_certificate_2&&{ uri: this.state.inspection_certificate_2_uri,type: 'image/jpeg',size: null,name: `inspection_certificate_2.jpg`})
+    formData.append(`road_tax`, this.state.road_tax&&{ uri: this.state.road_tax_uri,type: 'image/jpeg',size: null,name: `inspection_certificate_2.jpg`})
+    formData.append(`road_tax_2`, this.state.road_tax_2&&{ uri: this.state.road_tax_2_uri,type: 'image/jpeg',size: null,name: `inspection_certificate_2.jpg`})
+    formData.append(`road_tax_sticker`, this.state.road_tax_sticker&&{ uri: this.state.road_tax_sticker_uri,type: 'image/jpeg',size: null,name: `inspection_certificate_2.jpg`})
     formData.append(`payment`, 'monthly')
     await axios.post(base_url, formData,{
       headers: {
@@ -509,6 +511,13 @@ class UploadScreen extends Component {
     if(name==='road_tax_sticker'){this.setState({road_tax_sticker:null,road_tax_sticker_uri:null})}
     if(name==='road_tax'){this.setState({road_tax:null,road_tax_uri:null})}
     if(name==='road_tax_2'){this.setState({road_tax_2:null,road_tax_2_uri:null})}
+  }
+  destroyImageEquipment=(key)=>{
+    console.log(this.state.photoEquipment_uri.filter( (v,i)=>{return i !== key }));
+    this.setState({
+      photoEquipment_uri: this.state.photoEquipment_uri.filter( (v,i)=>{return i !== key }),
+      photoEquipment: this.state.photoEquipment.filter( (v,i)=>{return i !== key }),
+    });
   }
 
   Input=(label,name,value)=>{
